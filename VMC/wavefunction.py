@@ -4,7 +4,9 @@ import numpy as np
 #This takes in a position and returns 
 #either the value of the wave function or derivatives.
 class Wavefunction:
-  """ Positions are three index arrays as follows:
+  """ 
+  Skelton class for wavefunctions.
+  Positions are three index arrays as follows:
     [particle,dimension,configuration]
   """
   def __init__(self):
@@ -26,6 +28,12 @@ class Wavefunction:
 ########################################
 
 class ExponentSlaterWF:
+  """ 
+  Slater determinant specialized to one up and one down electron, each with
+  exponential orbitals.
+  Member variables:
+    alpha: decay parameter.
+  """
   def __init__(self,alpha=1):
     self.alpha=alpha
 #-------------------------
@@ -39,9 +47,9 @@ class ExponentSlaterWF:
 #-------------------------
   def laplacian(self,pos):
     dist=np.sqrt(np.sum(pos**2,axis=1))
-    xoverr=pos/dist[:,np.newaxis,:]
-    return np.sum(self.alpha**2 * xoverr**2 
-        -self.alpha * (xoverr - xoverr**3)/pos, 
+    pos_over_dist=pos/dist[:,np.newaxis,:]
+    return np.sum(self.alpha**2 * pos_over_dist**2 
+        -self.alpha * (pos_over_dist - pos_over_dist**3)/pos, 
         axis=1)
 #-------------------------
 
@@ -62,22 +70,26 @@ class JastrowWF:
 
 ########################################
 class MultiplyWF:
+  """ Wavefunction defined as the product of two other wavefunctions."""
   def __init__(self,wf1,wf2):
-    pass
+    self.wf1=wf1
+    self.wf2=wf2
 #-------------------------
   def value(self,pos):
-    pass
+    return self.wf1.value(pos)*self.wf2.value(pos)
 #-------------------------
   def gradient(self,pos):
-    pass
+    return self.wf1.gradient(pos)*self.wf2.value(pos) + self.wf1.value(pos)*self.wf2.gradient(pos)
 #-------------------------
   def laplacian(self,pos):
-    pass
+    return self.wf1.laplacian(pos)*self.wf2.value(pos) +\
+           2*np.sum(self.wf1.gradient(post)*self.wf2.gradient(pos),axis=1) +\
+           self.wf1.value(pos)*self.wf2.laplacian(pos)
 #-------------------------
 
 ########################################
 
-def derivativeTest(testpos,wf,delta=1e-4):
+def derivative_test(testpos,wf,delta=1e-4):
   """ Compare numerical and analytic derivatives. """
   wf0=wf.value(testpos)
   grad0=wf.gradient(testpos)
@@ -95,7 +107,7 @@ def derivativeTest(testpos,wf,delta=1e-4):
 
 ########################################
     
-def laplacianTest(testpos,wf,delta=1e-5):
+def laplacian_test(testpos,wf,delta=1e-5):
   """ Compare numerical and analytic Laplacians. """
   wf0=wf.value(testpos)
   lap0=wf.laplacian(testpos)
@@ -121,15 +133,15 @@ if __name__=="__main__":
   wf=ExponentSlaterWF(0.5)
   testpos=np.random.randn(2,3,5)
   df={'delta':[],
-      'rms derivative':[],
-      'rms laplacian':[]
+      'derivative':[],
+      'laplacian':[]
       }
   for delta in [1e-2,1e-3,1e-4,1e-5,1e-6]:
     df['delta'].append(delta)
-    df['rms derivative'].append(derivativeTest(testpos,wf,delta))
-    df['rms laplacian'].append(laplacianTest(testpos,wf,delta))
+    df['derivative'].append(derivativeTest(testpos,wf,delta))
+    df['laplacian'].append(laplacianTest(testpos,wf,delta))
 
   import pandas as pd
+  print("RMS differences")
   print(pd.DataFrame(df))
-
   

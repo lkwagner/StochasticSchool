@@ -24,7 +24,7 @@ class Hamiltonian:
 #------------------------------------
 
   
-def MetropolisSample(pos,wf,tau=0.01,nstep=1000):
+def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
   """
   Input variables:
     pos: a 3D numpy array with indices (electron,[x,y,z],configuration ) 
@@ -50,7 +50,7 @@ def MetropolisSample(pos,wf,tau=0.01,nstep=1000):
   return posold,acceptance
 
 #------------------------------------
-def LocalEnergy(pos,wf,H):
+def local_energy(pos,wf,H):
   return -0.5*np.sum(wf.laplacian(pos),axis=0)+H.V(pos)
 
 
