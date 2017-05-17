@@ -10,16 +10,16 @@ class Wavefunction:
   def __init__(self):
     pass
 #-------------------------
-  def value(self,x):
+  def value(self,pos):
     pass
 #-------------------------
-  def gradient(self,x):
+  def gradient(self,pos):
     """ Return grad psi/psi as a 3D array with dimensions
     [particle, dimension, configuration]
     """
     pass
 #-------------------------
-  def laplacian(self,x):
+  def laplacian(self,pos):
     pass
 #-------------------------
 
@@ -28,21 +28,20 @@ class Wavefunction:
 class ExponentSlaterWF:
   def __init__(self,alpha=1):
     self.alpha=alpha
-    pass
 #-------------------------
-  def value(self,x):
-    r=np.sqrt(np.sum(x**2,axis=1))
-    return np.exp(-self.alpha*r[0,:])*np.exp(-self.alpha*r[1,:])
+  def value(self,pos):
+    dist=np.sqrt(np.sum(pos**2,axis=1))
+    return np.exp(-self.alpha*dist[0,:])*np.exp(-self.alpha*dist[1,:])
 #-------------------------
-  def gradient(self,x):
-    r=np.sqrt(np.sum(x**2,axis=1))
-    return -self.alpha*x/r[:,np.newaxis,:]
+  def gradient(self,pos):
+    dist=np.sqrt(np.sum(pos**2,axis=1))
+    return -self.alpha*pos/dist[:,np.newaxis,:]
 #-------------------------
-  def laplacian(self,x):
-    r=np.sqrt(np.sum(x**2,axis=1))
-    xoverr=x/r[:,np.newaxis,:]
+  def laplacian(self,pos):
+    dist=np.sqrt(np.sum(pos**2,axis=1))
+    xoverr=pos/dist[:,np.newaxis,:]
     return np.sum(self.alpha**2 * xoverr**2 
-        -self.alpha * (xoverr - xoverr**3)/x, 
+        -self.alpha * (xoverr - xoverr**3)/pos, 
         axis=1)
 #-------------------------
 
@@ -51,13 +50,13 @@ class JastrowWF:
   def __init__(self):
     pass
 #-------------------------
-  def value(self,x):
+  def value(self,pos):
     pass
 #-------------------------
-  def gradient(self,x):
+  def gradient(self,pos):
     pass
 #-------------------------
-  def laplacian(self,x):
+  def laplacian(self,pos):
     pass
 #-------------------------
 
@@ -66,19 +65,20 @@ class MultiplyWF:
   def __init__(self,wf1,wf2):
     pass
 #-------------------------
-  def value(self,x):
+  def value(self,pos):
     pass
 #-------------------------
-  def gradient(self,x):
+  def gradient(self,pos):
     pass
 #-------------------------
-  def laplacian(self,x):
+  def laplacian(self,pos):
     pass
 #-------------------------
 
 ########################################
 
 def derivativeTest(testpos,wf,delta=1e-4):
+  """ Compare numerical and analytic derivatives. """
   wf0=wf.value(testpos)
   grad0=wf.gradient(testpos)
   npart=testpos.shape[0]
@@ -96,6 +96,7 @@ def derivativeTest(testpos,wf,delta=1e-4):
 ########################################
     
 def laplacianTest(testpos,wf,delta=1e-5):
+  """ Compare numerical and analytic Laplacians. """
   wf0=wf.value(testpos)
   lap0=wf.laplacian(testpos)
   npart=testpos.shape[0]
