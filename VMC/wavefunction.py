@@ -79,12 +79,12 @@ class MultiplyWF:
     return self.wf1.value(pos)*self.wf2.value(pos)
 #-------------------------
   def gradient(self,pos):
-    return self.wf1.gradient(pos)*self.wf2.value(pos) + self.wf1.value(pos)*self.wf2.gradient(pos)
+    return self.wf1.gradient(pos) + self.wf2.gradient(pos)
 #-------------------------
   def laplacian(self,pos):
-    return self.wf1.laplacian(pos)*self.wf2.value(pos) +\
-           2*np.sum(self.wf1.gradient(post)*self.wf2.gradient(pos),axis=1) +\
-           self.wf1.value(pos)*self.wf2.laplacian(pos)
+    return self.wf1.laplacian(pos) +\
+           2*np.sum(self.wf1.gradient(pos)*self.wf2.gradient(pos),axis=1) +\
+           self.wf2.laplacian(pos)
 #-------------------------
 
 ########################################
@@ -129,8 +129,8 @@ def laplacian_test(testpos,wf,delta=1e-5):
   return np.sqrt(np.sum((lap_numeric-lap0)**2)/(npart*testpos.shape[2]))
 ########################################
 
-if __name__=="__main__":
-  wf=ExponentSlaterWF(0.5)
+def test_wavefunction(wf):
+  """ Convenience function for running several tests on a wavefunction. """
   testpos=np.random.randn(2,3,5)
   df={'delta':[],
       'derivative':[],
@@ -138,10 +138,22 @@ if __name__=="__main__":
       }
   for delta in [1e-2,1e-3,1e-4,1e-5,1e-6]:
     df['delta'].append(delta)
-    df['derivative'].append(derivativeTest(testpos,wf,delta))
-    df['laplacian'].append(laplacianTest(testpos,wf,delta))
+    df['derivative'].append(derivative_test(testpos,wf,delta))
+    df['laplacian'].append(laplacian_test(testpos,wf,delta))
 
   import pandas as pd
   print("RMS differences")
   print(pd.DataFrame(df))
-  
+########################################
+
+if __name__=="__main__":
+  import pandas as pd
+  testpos=np.random.randn(2,3,5)
+
+  print("Exponent wavefunction")
+  ewf=ExponentSlaterWF(0.5)
+
+  test_wavefunction(ExponentSlaterWF(0.5))
+  mwf=MultiplyWF(ExponentSlaterWF(0.5),ExponentSlaterWF(0.6))
+  print("Multiplied wavefunction")
+  test_wavefunction(mwf)
