@@ -55,6 +55,24 @@ class ExponentSlaterWF:
 
 ########################################
 class JastrowWF:
+  """
+  Jastrow factor of the form 
+
+  exp(J_ee + J_en)
+
+  J_ee = a_ee|r_1 - r_2| / (1 + b_ee |r_1 - r_2|)
+  J_en = a_en|r_1 - r_2| / (1 + b_en |r_1 - r_2|)
+
+  Set by cusp conditions:
+  a_ee = 0.5 
+  a_en = 1.0
+  b_ee = (a_ee/c)**0.5
+  b_en = (a_en/c)**0.5
+
+  c is a free parameter.
+  """
+
+
   def __init__(self,free_param):
     self.freep=free_param
 
