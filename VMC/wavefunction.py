@@ -55,17 +55,33 @@ class ExponentSlaterWF:
 
 ########################################
 class JastrowWF:
-  def __init__(self):
-    pass
+  def __init__(self,free_param):
+    self.freep=free_param
+
+    # Parameters to satisfy cusp conditions.
+    self.eep_num=0.5
+    self.enp_num=1.0
+    self.eep_den=(self.eep_num/self.freep)**0.5
+    self.enp_den=(self.enp_num/self.freep)**0.5
+
 #-------------------------
   def value(self,pos):
-    pass
+    dist=np.sqrt(np.sum(pos**2,axis=1))
+    ppdist=np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5
+    exp_ee=(self.eep_num*ppdist)/(1 + self.eep_den*ppdist)
+    exp_en=np.sum((self.enp_num*dist)/(1 + self.enp_den*dist),axis=0)
+    return np.exp(exp_ee + exp_en)
 #-------------------------
   def gradient(self,pos):
-    pass
+    dist=np.sqrt(np.sum(pos**2,axis=1))
+    ppdist=np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5
+    grad_ee=self.eep_num*(pos[0,:,:]-pos[1,:,:])/(ppdist*(1+self.eep_den*ppdist)**2)
+    grad_ee=np.outer([1,-1],grad_ee).reshape(pos.shape)
+    grad_en=self.enp_num*pos/(dist[:,np.newaxis,:]*(1+self.enp_den*dist[:,np.newaxis,:])**2)
+    return grad_ee + grad_en
 #-------------------------
   def laplacian(self,pos):
-    pass
+    return np.zeros((pos.shape[0],pos.shape[2]))
 #-------------------------
 
 ########################################
@@ -152,8 +168,12 @@ if __name__=="__main__":
 
   print("Exponent wavefunction")
   ewf=ExponentSlaterWF(0.5)
-
   test_wavefunction(ExponentSlaterWF(0.5))
-  mwf=MultiplyWF(ExponentSlaterWF(0.5),ExponentSlaterWF(0.6))
+
   print("Multiplied wavefunction")
+  mwf=MultiplyWF(ExponentSlaterWF(0.5),ExponentSlaterWF(0.6))
   test_wavefunction(mwf)
+
+  print("Jastrow wavefunction")
+  jas=JastrowWF(0.1)
+  test_wavefunction(jas)
