@@ -66,7 +66,7 @@ class JastrowWF:
 
   Set by cusp conditions:
   a_ee = 0.5 
-  a_en = -1.0
+  a_en = -2.0
   b_ee = (a_ee/c)**0.5
   b_en = (-a_en/c)**0.5
 
@@ -109,10 +109,10 @@ class JastrowWF:
     jdee=1+self.eep_den*eedist
     pden=pos/dist
     # Partial derivatives of distance to nucleus and electron-electron distance.
-    # Only first squared and second derivatives are needed, simplifying sign.
-    pden2=(pos/dist)**2
+    pden=pos/dist
     pd2en=(dist**2-pos**2)/dist**3
-    pdee2=((pos[0,:,:]-pos[1,:,:])/eedist)**2
+    pdee=np.outer([1,-1],(pos[0,:,:]-pos[1,:,:])/eedist).reshape(pos.shape)
+    pdee2=pdee[0]**2 # Sign doesn't matter if squared.
     pd2ee=(eedist**2-(pos[0,:,:]-pos[1,:,:])**2)/eedist**3
 
     # Electron-electron part.
@@ -121,19 +121,13 @@ class JastrowWF:
         axis=0)
     lap_ee+=np.sum(self.eep_num**2*pdee2/jdee**4,axis=0)
 
-    # Electron-nulear part
+    # Electron-nuclear part
     lap_en=np.sum( 
-        (self.enp_num*pd2en*jden - 2*self.enp_num*self.enp_den*pden2)/jden**3,
+        (self.enp_num*pd2en*jden - 2*self.enp_num*self.enp_den*pden**2)/jden**3,
         axis=1)
-    lap_en+=np.sum(self.enp_num**2*pden2/jden**4,axis=1)
+    lap_en+=np.sum(self.enp_num**2*pden**2/jden**4,axis=1)
     
     # Cross term
-    dist=np.sqrt(np.sum(pos**2,axis=1))[:,np.newaxis,:]
-    eedist=(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5)[np.newaxis,:]
-    # Partial derivatives of distance to nucleus and electron-electron distance.
-    pden=pos/dist
-    pdee=np.outer([1,-1],(pos[0,:,:]-pos[1,:,:])/eedist).reshape(pos.shape)
-
     grad_ee=self.eep_num*pdee/(1+self.eep_den*eedist)**2
     grad_en=self.enp_num*pden/(1+self.enp_den*dist)**2
     lap_xs=2*np.sum(grad_ee*grad_en,axis=1)
