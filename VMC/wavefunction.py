@@ -62,7 +62,7 @@ class JastrowWF:
   exp(J_ee + J_en)
 
   J_ee = a_ee|r_1 - r_2| / (1 + b_ee |r_1 - r_2|)
-  J_en = a_en|r_1 - r_2| / (1 + b_en |r_1 - r_2|)
+  J_en = -(sum over i) a_en|r_i| / (1 + b_en |r_i|)
 
   Set by cusp conditions:
   a_ee = 0.5 
