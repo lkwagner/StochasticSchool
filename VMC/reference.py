@@ -112,3 +112,5 @@ if __name__=="__main__":
   wf=wavefunction.JastrowWF(1.0)
   H=Hamiltonian(2)
   test_cusp(wf,H)
+
+  test_vmc()
