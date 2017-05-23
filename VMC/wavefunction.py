@@ -75,7 +75,7 @@ class JastrowWF:
     self.freep=free_param
 
     # Parameters to satisfy cusp conditions.
-    self.eep_num=0.5
+    self.eep_num=0.5*0
     self.enp_num=1.0
     self.eep_den=(self.eep_num/self.freep)**0.5
     self.enp_den=(self.enp_num/self.freep)**0.5
@@ -103,15 +103,15 @@ class JastrowWF:
 
   def laplacian(self,pos):
     dist=np.sqrt(np.sum(pos**2,axis=1))[:,np.newaxis,:]
+    eedist=(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5)[np.newaxis,:]
     jden=1+self.enp_den*dist
-
-    # Electron-nulear part
-    lap_en=self.enp_num*( (dist**2-pos**2)*jden - 2*self.enp_den*pos**2*dist )
-    lap_en/=(jden**3*dist**3)
-    lap_en=lap_en.sum(axis=1)
-
-    grad_en2=np.sum((self.enp_num*pos/(dist*(1+self.enp_den*dist)**2))**2,axis=1)
-    lap_en+=grad_en2
+    pden=pos/dist
+    # Partial derivatives of distance to nucleus and electron-electron distance.
+    # Only first squared and second derivatives are needed, simplifying sign.
+    pden2=(pos/dist)**2
+    p2den=(dist**2-pos**2)/dist**3
+    pdee2=((pos[0,:,:]-pos[1,:,:])/eedist)**2
+    pd2ee=(eedist**2-(pos[0,:,:]-pos[1,:,:])**2)/eedist**3
 
     # Electron-electron part.
     lap_en=self.enp_num*( (dist**2-pos**2)*jden - 2*self.enp_den*pos**2*dist )
@@ -120,6 +120,13 @@ class JastrowWF:
 
     grad_en2=np.sum((self.enp_num*pos/(dist*(1+self.enp_den*dist)**2))**2,axis=1)
     lap_en+=grad_en2
+
+    # Electron-nulear part
+    lap_en=np.sum( 
+        (self.enp_num*p2den*jden - 2*self.enp_num*self.enp_den*pden2)/jden**3,
+        axis=1)
+    lap_en+=np.sum(self.enp_num**2*pden2/(1+self.enp_den*dist)**4,axis=1)
+
     return lap_en
   #-------------------------
 
