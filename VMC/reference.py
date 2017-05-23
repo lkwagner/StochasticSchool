@@ -56,7 +56,32 @@ def local_energy(pos,wf,H):
 
 #####################################
 
-#def test_cusp(wf,H):
+def test_cusp(wf,H):
+  import matplotlib.pyplot as plt
+  smallshift=1e-7
+  path=np.zeros((2,3,1,100))+smallshift
+  path[0,0,:,:]=np.linspace(-0.5,1,100)[np.newaxis,np.newaxis,:]
+  path[1,0,:,:]=0.5+smallshift
+
+  nuc_energy=H.EN(path)
+  elec_energy=H.EE(path)
+  kin_energy=-0.5*np.sum(wf.laplacian(path),axis=0)
+  tot_energy=kin_energy+nuc_energy+elec_energy
+
+  fig,ax=plt.subplots(1,1)
+  ax.plot(path[0,0,0,:],kin_energy[0],label='kinetic')
+  ax.plot(path[0,0,0,:],nuc_energy[0],label='nuclear')
+  ax.plot(path[0,0,0,:],elec_energy[0],label='interaction')
+  ax.plot(path[0,0,0,:],tot_energy[0],label='total')
+  ax.legend(loc='upper left',bbox_to_anchor=(1.0,1.0),frameon=False)
+
+  ax.set_ylim((-100,100))
+  ax.set_xlabel('x-coordinate')
+  ax.set_ylabel('Energy (Ha)')
+  fig.set_size_inches(5,3)
+  fig.tight_layout()
+  fig.subplots_adjust(right=0.60)
+  fig.savefig('cusp_test.pdf')
 
 #####################################
 
@@ -84,4 +109,6 @@ def test_vmc(
 
 if __name__=="__main__":
 
-  test_vmc()
+  wf=wavefunction.JastrowWF(1.0)
+  H=Hamiltonian(2)
+  test_cusp(wf,H)

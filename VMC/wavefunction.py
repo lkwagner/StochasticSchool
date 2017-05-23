@@ -62,13 +62,13 @@ class JastrowWF:
   exp(J_ee + J_en)
 
   J_ee = a_ee|r_1 - r_2| / (1 + b_ee |r_1 - r_2|)
-  J_en = -(sum over i) a_en|r_i| / (1 + b_en |r_i|)
+  J_en = (sum over i) a_en|r_i| / (1 + b_en |r_i|)
 
   Set by cusp conditions:
   a_ee = 0.5 
-  a_en = 1.0
+  a_en = -1.0
   b_ee = (a_ee/c)**0.5
-  b_en = (a_en/c)**0.5
+  b_en = (-a_en/c)**0.5
 
   c is a free parameter.
   """
@@ -77,9 +77,9 @@ class JastrowWF:
 
     # Parameters to satisfy cusp conditions.
     self.eep_num=0.5
-    self.enp_num=1.0
+    self.enp_num=-2.0
     self.eep_den=(self.eep_num/self.freep)**0.5
-    self.enp_den=(self.enp_num/self.freep)**0.5
+    self.enp_den=(-self.enp_num/self.freep)**0.5
   #-------------------------
 
   def value(self,pos):
@@ -126,8 +126,19 @@ class JastrowWF:
         (self.enp_num*pd2en*jden - 2*self.enp_num*self.enp_den*pden2)/jden**3,
         axis=1)
     lap_en+=np.sum(self.enp_num**2*pden2/jden**4,axis=1)
+    
+    # Cross term
+    dist=np.sqrt(np.sum(pos**2,axis=1))[:,np.newaxis,:]
+    eedist=(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5)[np.newaxis,:]
+    # Partial derivatives of distance to nucleus and electron-electron distance.
+    pden=pos/dist
+    pdee=np.outer([1,-1],(pos[0,:,:]-pos[1,:,:])/eedist).reshape(pos.shape)
 
-    return lap_ee[np.newaxis,:] + lap_en
+    grad_ee=self.eep_num*pdee/(1+self.eep_den*eedist)**2
+    grad_en=self.enp_num*pden/(1+self.enp_den*dist)**2
+    lap_xs=2*np.sum(grad_ee*grad_en,axis=1)
+
+    return lap_ee[np.newaxis,:] + lap_en + lap_xs
   #-------------------------
 
 ########################################
