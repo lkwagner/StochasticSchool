@@ -54,16 +54,23 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
 def local_energy(pos,wf,H):
   return -0.5*np.sum(wf.laplacian(pos),axis=0)+H.V(pos)
 
+#####################################
 
-if __name__=="__main__":
-  nconfig=10000
-  ndim=3
-  nelec=2
-  nstep=1000
-  wf=wavefunction.ExponentSlaterWF(alpha=1.0)
-  H=Hamiltonian(Z=1)
+#def test_cusp(wf,H):
+
+#####################################
+
+def test_vmc(
+    nconfig=10000,
+    ndim=3,
+    nelec=2,
+    nstep=1000,
+    wf=wavefunction.ExponentSlaterWF(alpha=1.0),
+    H=Hamiltonian(Z=1)):
+  ''' Calculate VMC energies and compare to reference values.'''
+
   possample=np.random.randn(nelec,ndim,nconfig)
-  possample,acc=MetropolisSample(possample,wf,tau=0.5,nstep=nstep)
+  possample,acc=metropolis_sample(possample,wf,tau=0.5,nstep=nstep)
   ke=-0.5*np.sum(wf.laplacian(possample),axis=0)
   vion=H.EN(possample)
   vee=H.EE(possample)
@@ -74,3 +81,7 @@ if __name__=="__main__":
     avg=np.mean(quant)
     err=np.std(quant)/np.sqrt(nconfig)
     print(nm,avg,"+/-",err, "reference",ref)
+
+if __name__=="__main__":
+
+  test_vmc()
