@@ -54,6 +54,7 @@ class ExponentSlaterWF:
 #-------------------------
 
 ########################################
+
 class JastrowWF:
   """
   Jastrow factor of the form 
@@ -128,6 +129,7 @@ class JastrowWF:
   #-------------------------
 
 ########################################
+
 class MultiplyWF:
   """ Wavefunction defined as the product of two other wavefunctions."""
   def __init__(self,wf1,wf2):
@@ -186,6 +188,7 @@ def laplacian_test(testpos,wf,delta=1e-5):
       lap_numeric[p,:]+=(wf_plus+wf_minus-2*wf0)/(wf0*delta**2)
   
   return np.sqrt(np.sum((lap_numeric-lap0)**2)/(npart*testpos.shape[2]))
+
 ########################################
 
 def test_wavefunction(wf):
@@ -203,6 +206,7 @@ def test_wavefunction(wf):
   import pandas as pd
   print("RMS differences")
   print(pd.DataFrame(df))
+
 ########################################
 
 if __name__=="__main__":

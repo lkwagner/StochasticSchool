@@ -7,7 +7,7 @@
 import numpy as np
 import wavefunction
 
-#------------------------------------
+#####################################
 
 class Hamiltonian:
   def __init__(self,Z=2):
@@ -21,8 +21,8 @@ class Hamiltonian:
     return 1/ree
   def V(self,pos):
     return self.EN(pos)#+self.EE(pos)
-#------------------------------------
 
+#####################################
   
 def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
   """
@@ -49,7 +49,8 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
 
   return posold,acceptance
 
-#------------------------------------
+#####################################
+
 def local_energy(pos,wf,H):
   return -0.5*np.sum(wf.laplacian(pos),axis=0)+H.V(pos)
 
@@ -73,10 +74,3 @@ if __name__=="__main__":
     avg=np.mean(quant)
     err=np.std(quant)/np.sqrt(nconfig)
     print(nm,avg,"+/-",err, "reference",ref)
-
-
-  
-
-  
-  
-
