@@ -71,8 +71,6 @@ class JastrowWF:
 
   c is a free parameter.
   """
-
-
   def __init__(self,free_param):
     self.freep=free_param
 
@@ -81,26 +79,49 @@ class JastrowWF:
     self.enp_num=1.0
     self.eep_den=(self.eep_num/self.freep)**0.5
     self.enp_den=(self.enp_num/self.freep)**0.5
+  #-------------------------
 
-#-------------------------
   def value(self,pos):
     dist=np.sqrt(np.sum(pos**2,axis=1))
-    ppdist=np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5
-    exp_ee=(self.eep_num*ppdist)/(1 + self.eep_den*ppdist)
+    eedist=np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5
+    exp_ee=(self.eep_num*eedist)/(1 + self.eep_den*eedist)
     exp_en=np.sum((self.enp_num*dist)/(1 + self.enp_den*dist),axis=0)
     return np.exp(exp_ee + exp_en)
-#-------------------------
+  #-------------------------
+
   def gradient(self,pos):
-    dist=np.sqrt(np.sum(pos**2,axis=1))
-    ppdist=np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5
-    grad_ee=self.eep_num*(pos[0,:,:]-pos[1,:,:])/(ppdist*(1+self.eep_den*ppdist)**2)
-    grad_ee=np.outer([1,-1],grad_ee).reshape(pos.shape)
-    grad_en=self.enp_num*pos/(dist[:,np.newaxis,:]*(1+self.enp_den*dist[:,np.newaxis,:])**2)
+    dist=np.sqrt(np.sum(pos**2,axis=1))[:,np.newaxis,:]
+    eedist=(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5)[np.newaxis,:]
+    # Partial derivatives of distance to nucleus and electron-electron distance.
+    pden=pos/dist
+    pdee=np.outer([1,-1],(pos[0,:,:]-pos[1,:,:])/eedist).reshape(pos.shape)
+
+    grad_ee=self.eep_num*pdee/(1+self.eep_den*eedist)**2
+    grad_en=self.enp_num*pden/(1+self.enp_den*dist)**2
     return grad_ee + grad_en
-#-------------------------
+  #-------------------------
+
   def laplacian(self,pos):
-    return np.zeros((pos.shape[0],pos.shape[2]))
-#-------------------------
+    dist=np.sqrt(np.sum(pos**2,axis=1))[:,np.newaxis,:]
+    jden=1+self.enp_den*dist
+
+    # Electron-nulear part
+    lap_en=self.enp_num*( (dist**2-pos**2)*jden - 2*self.enp_den*pos**2*dist )
+    lap_en/=(jden**3*dist**3)
+    lap_en=lap_en.sum(axis=1)
+
+    grad_en2=np.sum((self.enp_num*pos/(dist*(1+self.enp_den*dist)**2))**2,axis=1)
+    lap_en+=grad_en2
+
+    # Electron-electron part.
+    lap_en=self.enp_num*( (dist**2-pos**2)*jden - 2*self.enp_den*pos**2*dist )
+    lap_en/=(jden**3*dist**3)
+    lap_en=lap_en.sum(axis=1)
+
+    grad_en2=np.sum((self.enp_num*pos/(dist*(1+self.enp_den*dist)**2))**2,axis=1)
+    lap_en+=grad_en2
+    return lap_en
+  #-------------------------
 
 ########################################
 class MultiplyWF:
@@ -193,5 +214,5 @@ if __name__=="__main__":
   test_wavefunction(mwf)
 
   print("Jastrow wavefunction")
-  jas=JastrowWF(0.1)
+  jas=JastrowWF(1.0)
   test_wavefunction(jas)
