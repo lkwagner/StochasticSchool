@@ -76,7 +76,7 @@ class JastrowWF:
     self.freep=free_param
 
     # Parameters to satisfy cusp conditions.
-    self.eep_num=0.5*0
+    self.eep_num=0.5
     self.enp_num=1.0
     self.eep_den=(self.eep_num/self.freep)**0.5
     self.enp_den=(self.enp_num/self.freep)**0.5
@@ -116,16 +116,18 @@ class JastrowWF:
     pd2ee=(eedist**2-(pos[0,:,:]-pos[1,:,:])**2)/eedist**3
 
     # Electron-electron part.
-    lap_ee=(self.eep_num*pd2ee*jdee - 2*self.eep_num*self.eep_den*pdee2)/jdee**3,
-    lap_ee+=self.eep_num**2*pdee2/(1+self.eep_den*dist)**4
+    lap_ee=np.sum( 
+        (self.eep_num*pd2ee*jdee - 2*self.eep_num*self.eep_den*pdee2)/jdee**3,
+        axis=0)
+    lap_ee+=np.sum(self.eep_num**2*pdee2/jdee**4,axis=0)
 
     # Electron-nulear part
     lap_en=np.sum( 
         (self.enp_num*pd2en*jden - 2*self.enp_num*self.enp_den*pden2)/jden**3,
         axis=1)
-    lap_en+=np.sum(self.enp_num**2*pden2/(1+self.enp_den*dist)**4,axis=1)
+    lap_en+=np.sum(self.enp_num**2*pden2/jden**4,axis=1)
 
-    return lap_en
+    return lap_ee[np.newaxis,:] + lap_en
   #-------------------------
 
 ########################################
