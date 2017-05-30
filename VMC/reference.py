@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #This is not the most efficient (in memory or computer time) implementation. 
 #It is supposed to be relatively straightforward to 
 #understand and flexible enough to play with.
@@ -20,7 +21,7 @@ class Hamiltonian:
     ree=np.sqrt(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0))
     return 1/ree
   def V(self,pos):
-    return self.EN(pos)#+self.EE(pos)
+    return self.EN(pos)+self.EE(pos)
 
 #####################################
   
@@ -86,31 +87,44 @@ def test_cusp(wf,H):
 #####################################
 
 def test_vmc(
-    nconfig=10000,
+    nconfig=1000,
     ndim=3,
     nelec=2,
-    nstep=1000,
+    nstep=100,
     wf=wavefunction.ExponentSlaterWF(alpha=1.0),
     H=Hamiltonian(Z=1)):
   ''' Calculate VMC energies and compare to reference values.'''
 
-  possample=np.random.randn(nelec,ndim,nconfig)
-  possample,acc=metropolis_sample(possample,wf,tau=0.5,nstep=nstep)
-  ke=-0.5*np.sum(wf.laplacian(possample),axis=0)
-  vion=H.EN(possample)
-  vee=H.EE(possample)
-  eloc=ke+vion+vee
-  print("Cycle finished; acceptance",acc)
-  refs=[1.0,-2.0,0.0,-1.0]
-  for nm,quant,ref in zip(['kinetic','Electron-nucleus','Electron-electron','total'],[ke,vion,vee,eloc],refs):
+  print( 'VMC test: 2 non-interacting electrons around a fixed proton' )
+
+  # initialize electrons randomly
+  possample     = np.random.randn(nelec,ndim,nconfig)
+  # sample exact wave function
+  possample,acc = metropolis_sample(possample,wf,tau=0.5,nstep=nstep)
+
+  # calculate kinetic energy
+  ke   = -0.5*np.sum(wf.laplacian(possample),axis=0)
+  # calculate potential energy
+  vion = H.EN(possample)
+  eloc = ke+vion
+
+  # report
+  print( "Cycle finished; acceptance = {acc:3.2f}.".format(acc=acc) )
+  for nm,quant,ref in zip(['kinetic','Electron-nucleus','total']
+                         ,[ ke,       vion,              eloc]
+                         ,[ 1.0,      -2.0,              -1.0]):
     avg=np.mean(quant)
     err=np.std(quant)/np.sqrt(nconfig)
-    print(nm,avg,"+/-",err, "reference",ref)
+    print( "{name:20s} = {avg:10.6f} +- {err:8.6f}; reference = {ref:5.2f}".format(
+      name=nm, avg=avg, err=err, ref=ref) )
 
-if __name__=="__main__":
-
+def run_cusp_test():
   wf=wavefunction.JastrowWF(1.0)
-  H=Hamiltonian(2)
+  H=Hamiltonian()
+  # make sure jastrow has the right cusp
+  assert(np.isclose(wf.Z,H.Z))
   test_cusp(wf,H)
 
+if __name__=="__main__":
+  run_cusp_test()
   test_vmc()

@@ -72,12 +72,13 @@ class JastrowWF:
 
   c is a free parameter.
   """
-  def __init__(self,free_param):
+  def __init__(self,free_param,Z=2.0):
+    self.Z=Z # nuclear charge, default to He
     self.freep=free_param
 
     # Parameters to satisfy cusp conditions.
     self.eep_num=0.5
-    self.enp_num=-2.0
+    self.enp_num=-Z
     self.eep_den=(self.eep_num/self.freep)**0.5
     self.enp_den=(-self.enp_num/self.freep)**0.5
   #-------------------------
@@ -224,10 +225,14 @@ if __name__=="__main__":
   ewf=ExponentSlaterWF(0.5)
   test_wavefunction(ExponentSlaterWF(0.5))
 
+  print("Jastrow wavefunction")
+  jas=JastrowWF(1.0)
+  test_wavefunction(jas)
+
   print("Multiplied wavefunction")
   mwf=MultiplyWF(ExponentSlaterWF(0.5),ExponentSlaterWF(0.6))
   test_wavefunction(mwf)
 
-  print("Jastrow wavefunction")
-  jas=JastrowWF(1.0)
-  test_wavefunction(jas)
+  print("Slater-Jastrow wavefunction")
+  sjwf=MultiplyWF(ExponentSlaterWF(0.5),JastrowWF(1.0))
+  test_wavefunction(sjwf)
