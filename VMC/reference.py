@@ -71,7 +71,8 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
 
     # record
     posold[:,:,acc_idx]   = posnew[:,:,acc_idx]
-    driftold[:,:,acc_idx] = driftnew[:,:,acc_idx]
+    if use_drift:
+        driftold[:,:,acc_idx] = driftnew[:,:,acc_idx]
     wfold[acc_idx] = wfnew[acc_idx]
     acceptance += np.mean(acc_idx)/nstep
 
@@ -155,4 +156,5 @@ def run_cusp_test():
 
 if __name__=="__main__":
   run_cusp_test()
+  test_vmc(use_drift=False)
   test_vmc(use_drift=True)
