@@ -98,7 +98,7 @@ def local_energy(pos,wf,ham):
 
 #####################################
 
-def test_cusp(wf,ham):
+def test_cusp():
   import matplotlib.pyplot as plt
 
   wf=wavefunction.JastrowWF(1.0)
@@ -106,7 +106,6 @@ def test_cusp(wf,ham):
 
   # make sure jastrow has the right cusp
   assert(np.isclose(wf.Z,ham.Z))
-  test_cusp(wf,ham)
   smallshift=1e-7
   path=np.zeros((2,3,1,100))+smallshift
   path[0,0,:,:]=np.linspace(-0.5,1,100)[np.newaxis,np.newaxis,:]
