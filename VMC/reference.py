@@ -14,18 +14,20 @@ class Hamiltonian:
   def __init__(self,Z=2):
     self.Z=Z
     pass
-  def EN(self,pos):
+  def pot_en(self,pos):
+    """ electron-nuclear potential for configuration pos """
     r=np.sqrt(np.sum(pos**2,axis=1))
     return np.sum(-self.Z/r,axis=0)
-  def EE(self,pos):
+  def pot_ee(self,pos):
+    """ electron-electron potential for configuration pos """
     ree=np.sqrt(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0))
     return 1/ree
-  def V(self,pos):
-    return self.EN(pos)+self.EE(pos)
+  def pot(self,pos):
+    return self.pot_en(pos)+self.pot_ee(pos)
 
 #####################################
   
-def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
+def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
   """
   Input variables:
     pos: a 3D numpy array with indices (electron,[x,y,z],configuration ) 
@@ -34,19 +36,44 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
     posnew: A 3D numpy array of configurations the same shape as pos, distributed according to psi^2
     acceptance ratio: 
   """
-  posnew=pos.copy()
-  posold=pos.copy()
-  wfold=wf.value(posold)
+
+  # initialize
+  posnew = pos.copy()
+  posold = pos.copy()
+  wfold  = wf.value(posold)
+  if use_drift:
+    driftold = wf.gradient(posold)
   acceptance=0.0
   nconf=pos.shape[2]
-  for s in range(nstep):
-    posnew=posold+tau*np.random.standard_normal(posold.shape)
+  for istep in range(nstep):
+
+    # propose a move
+    gauss_move_old = np.random.standard_normal(posold.shape)
+    posnew=posold+tau*gauss_move_old
+    if use_drift:
+        posnew  += tau*driftold
+
     wfnew=wf.value(posnew)
-    acc=wfnew**2/wfold**2 + np.random.random_sample(nconf) > 1.0
-    #print(acc)
-    posold[:,:,acc]=posnew[:,:,acc]
-    wfold[acc]=wfnew[acc]
-    acceptance+=np.mean(acc)/nstep
+
+    # calculate acceptance probability
+    prob = wfnew**2/wfold**2
+    if use_drift:
+        driftnew = wf.gradient(posnew)
+        gauss_move_new = (posold-posnew)/tau - driftnew
+        #assert np.allclose( posold,posnew+tau*(gauss_move_new+driftnew) ) 
+        gauss_old_sq = np.sum( np.sum(gauss_move_old**2.,axis=1) ,axis=0)
+        gauss_new_sq = np.sum( np.sum(gauss_move_new**2.,axis=1), axis=0)
+        ln_Tnew_over_Told = (gauss_old_sq-gauss_new_sq)/2.
+        prob *= np.exp(ln_Tnew_over_Told)
+
+    # get indices of accepted moves
+    acc_idx = prob + np.random.random_sample(nconf) > 1.0
+
+    # record
+    posold[:,:,acc_idx]   = posnew[:,:,acc_idx]
+    driftold[:,:,acc_idx] = driftnew[:,:,acc_idx]
+    wfold[acc_idx] = wfnew[acc_idx]
+    acceptance += np.mean(acc_idx)/nstep
 
   return posold,acceptance
 
@@ -64,8 +91,8 @@ def test_cusp(wf,H):
   path[0,0,:,:]=np.linspace(-0.5,1,100)[np.newaxis,np.newaxis,:]
   path[1,0,:,:]=0.5+smallshift
 
-  nuc_energy=H.EN(path)
-  elec_energy=H.EE(path)
+  nuc_energy=H.pot_en(path)
+  elec_energy=H.pot_ee(path)
   kin_energy=-0.5*np.sum(wf.laplacian(path),axis=0)
   tot_energy=kin_energy+nuc_energy+elec_energy
 
@@ -92,7 +119,8 @@ def test_vmc(
     nelec=2,
     nstep=100,
     wf=wavefunction.ExponentSlaterWF(alpha=1.0),
-    H=Hamiltonian(Z=1)):
+    H=Hamiltonian(Z=1),
+    use_drift=False):
   ''' Calculate VMC energies and compare to reference values.'''
 
   print( 'VMC test: 2 non-interacting electrons around a fixed proton' )
@@ -100,12 +128,12 @@ def test_vmc(
   # initialize electrons randomly
   possample     = np.random.randn(nelec,ndim,nconfig)
   # sample exact wave function
-  possample,acc = metropolis_sample(possample,wf,tau=0.5,nstep=nstep)
+  possample,acc = metropolis_sample(possample,wf,tau=0.5,nstep=nstep,use_drift=use_drift)
 
   # calculate kinetic energy
   ke   = -0.5*np.sum(wf.laplacian(possample),axis=0)
   # calculate potential energy
-  vion = H.EN(possample)
+  vion = H.pot_en(possample)
   eloc = ke+vion
 
   # report
@@ -127,4 +155,4 @@ def run_cusp_test():
 
 if __name__=="__main__":
   run_cusp_test()
-  test_vmc()
+  test_vmc(use_drift=True)
