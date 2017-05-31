@@ -100,6 +100,13 @@ def local_energy(pos,wf,ham):
 
 def test_cusp(wf,ham):
   import matplotlib.pyplot as plt
+
+  wf=wavefunction.JastrowWF(1.0)
+  ham=Hamiltonian()
+
+  # make sure jastrow has the right cusp
+  assert(np.isclose(wf.Z,ham.Z))
+  test_cusp(wf,ham)
   smallshift=1e-7
   path=np.zeros((2,3,1,100))+smallshift
   path[0,0,:,:]=np.linspace(-0.5,1,100)[np.newaxis,np.newaxis,:]
@@ -160,13 +167,6 @@ def test_vmc(
     err=np.std(quant)/np.sqrt(nconfig)
     print( "{name:20s} = {avg:10.6f} +- {err:8.6f}; reference = {ref:5.2f}".format(
       name=nm, avg=avg, err=err, ref=ref) )
-
-def run_cusp_test():
-  wf=wavefunction.JastrowWF(1.0)
-  ham=Hamiltonian()
-  # make sure jastrow has the right cusp
-  assert(np.isclose(wf.Z,ham.Z))
-  test_cusp(wf,ham)
 
 if __name__=="__main__":
   run_cusp_test()
