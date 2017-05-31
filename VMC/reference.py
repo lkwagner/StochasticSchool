@@ -26,7 +26,20 @@ class Hamiltonian:
     return self.pot_en(pos)+self.pot_ee(pos)
 
 #####################################
-  
+
+def drift_vector(pos,wf,tau=None,scaled=False):
+    """ return drift needed for electrons to importance sample psi^2 """
+    vec = wf.gradient(pos) 
+    dvec= vec # (grad_ln_psisq)/(2m) = grad_psi_over_psi
+    if scaled: # rescale drift vector to limit its magnitude near psi=0
+        if tau is None:
+            raise RuntimeError('time step must be given to calculate scaled drift')
+        vec_mag = np.sum(vec**2.,axis=1)
+        # Umrigar, JCP 99, 2865 (1993).
+        vscale  = (-1.+np.sqrt(1+2*vec_mag**2.*tau))/(vec_mag**2.*tau)
+        dvec   *= vscale[:,np.newaxis,:]
+    return dvec
+
 def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
   """
   Input variables:
@@ -42,13 +55,13 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
   posold = pos.copy()
   wfold  = wf.value(posold)
   if use_drift:
-    driftold = wf.gradient(posold)
+    driftold = drift_vector(posold,wf,tau=tau,scaled=True)
   acceptance=0.0
   nconf=pos.shape[2]
   for istep in range(nstep):
 
     # propose a move
-    gauss_move_old = np.random.standard_normal(posold.shape)
+    gauss_move_old = np.random.randn(*posold.shape)
     posnew=posold+tau*gauss_move_old
     if use_drift:
         posnew  += tau*driftold
@@ -58,7 +71,7 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
     # calculate acceptance probability
     prob = wfnew**2/wfold**2
     if use_drift:
-        driftnew = wf.gradient(posnew)
+        driftnew = drift_vector(posnew,wf,tau=tau,scaled=True)
         gauss_move_new = (posold-posnew)/tau - driftnew
         #assert np.allclose( posold,posnew+tau*(gauss_move_new+driftnew) ) 
         gauss_old_sq = np.sum( np.sum(gauss_move_old**2.,axis=1) ,axis=0)
@@ -80,20 +93,20 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
 
 #####################################
 
-def local_energy(pos,wf,H):
-  return -0.5*np.sum(wf.laplacian(pos),axis=0)+H.V(pos)
+def local_energy(pos,wf,ham):
+  return -0.5*np.sum(wf.laplacian(pos),axis=0)+ham.pot(pos)
 
 #####################################
 
-def test_cusp(wf,H):
+def test_cusp(wf,ham):
   import matplotlib.pyplot as plt
   smallshift=1e-7
   path=np.zeros((2,3,1,100))+smallshift
   path[0,0,:,:]=np.linspace(-0.5,1,100)[np.newaxis,np.newaxis,:]
   path[1,0,:,:]=0.5+smallshift
 
-  nuc_energy=H.pot_en(path)
-  elec_energy=H.pot_ee(path)
+  nuc_energy=ham.pot_en(path)
+  elec_energy=ham.pot_ee(path)
   kin_energy=-0.5*np.sum(wf.laplacian(path),axis=0)
   tot_energy=kin_energy+nuc_energy+elec_energy
 
@@ -115,13 +128,14 @@ def test_cusp(wf,H):
 #####################################
 
 def test_vmc(
-    nconfig=1000,
-    ndim=3,
+    nconfig=1000, ndim=3,
     nelec=2,
     nstep=100,
+    tau=0.5,
     wf=wavefunction.ExponentSlaterWF(alpha=1.0),
-    H=Hamiltonian(Z=1),
-    use_drift=False):
+    ham=Hamiltonian(Z=1),
+    use_drift=False
+    ):
   ''' Calculate VMC energies and compare to reference values.'''
 
   print( 'VMC test: 2 non-interacting electrons around a fixed proton' )
@@ -129,12 +143,12 @@ def test_vmc(
   # initialize electrons randomly
   possample     = np.random.randn(nelec,ndim,nconfig)
   # sample exact wave function
-  possample,acc = metropolis_sample(possample,wf,tau=0.5,nstep=nstep,use_drift=use_drift)
+  possample,acc = metropolis_sample(possample,wf,tau=tau,nstep=nstep,use_drift=use_drift)
 
   # calculate kinetic energy
   ke   = -0.5*np.sum(wf.laplacian(possample),axis=0)
   # calculate potential energy
-  vion = H.pot_en(possample)
+  vion = ham.pot_en(possample)
   eloc = ke+vion
 
   # report
@@ -149,10 +163,10 @@ def test_vmc(
 
 def run_cusp_test():
   wf=wavefunction.JastrowWF(1.0)
-  H=Hamiltonian()
+  ham=Hamiltonian()
   # make sure jastrow has the right cusp
-  assert(np.isclose(wf.Z,H.Z))
-  test_cusp(wf,H)
+  assert(np.isclose(wf.Z,ham.Z))
+  test_cusp(wf,ham)
 
 if __name__=="__main__":
   run_cusp_test()
