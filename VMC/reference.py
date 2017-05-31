@@ -206,7 +206,7 @@ def test_hellium(
 #####################################
 
 if __name__=="__main__":
-  run_cusp_test()
+  test_cusp()
   test_vmc(use_drift=False)
   test_vmc(use_drift=True)
   test_hellium(tau=0.1,use_drift=True,wf=wavefunction.JastrowWF(1000))
