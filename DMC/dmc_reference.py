@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import numpy as np
-from col import error
 import sys
 sys.path.insert(0,'../VMC')
+sys.path.insert(0,'../MonteCarlo')
+from analyze_trace import error
 from wavefunction import ExponentSlaterWF, JastrowWF, MultiplyWF
-from reference import Hamiltonian,metropolis_sample,drift_vector,drift_prob,local_energy
+from reference import Hamiltonian,local_energy,metropolis_sample,\
+  drift_vector,drift_prob
 
 #####################################
 
