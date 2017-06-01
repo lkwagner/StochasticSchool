@@ -2,7 +2,11 @@
 import numpy as np
 
 def mean(trace):
-    """ calculate the mean of a trace of scalar data """
+    """ calculate the mean of a trace of scalar data
+    results should be identical to np.mean(trace)
+    pre:  trace should be a 1D iterable array of floating point numbers
+    post: return the mean of this trace of scalars 
+    """
     return np.mean(trace)
 # end def mean
 
@@ -12,7 +16,6 @@ def std(trace):
     pre:  trace should be a 1D iterable array of floating point numbers
     post: return the standard deviation of this trace of scalars 
     """
-    # calculate stadard deviation
     return np.std(trace,ddof=1)
 # end def std
 
@@ -128,8 +131,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # read trace file
-    traces = np.loadtxt(args.filename)
+    traces = np.loadtxt(args.filename,ndmin=2)
     nrow,ncol = traces.shape
+
     if args.col_idx >= ncol:
         raise RuntimeError('%s has %d columns, no requested col_idx=%d')
     # end if
@@ -161,7 +165,7 @@ if __name__ == '__main__':
     header = "%10s   mean   stddev   corr   err" % "observable"
     fmt    = "{colname:10s}  {mean:1.4f}  {stddev:1.4f}   {corr:1.2f}  {err:1.4f}"
     output = fmt.format(
-            colname  = names[args.col_idx]
+            colname  = str(names[args.col_idx])
           , mean     = mymean
           , stddev   = mystd
           , corr     = mycorr
