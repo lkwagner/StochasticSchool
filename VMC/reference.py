@@ -34,11 +34,13 @@ def drift_vector(pos,wf,tau=None,scaled=False):
     if scaled: # rescale drift vector to limit its magnitude near psi=0
         if tau is None:
             raise RuntimeError('time step must be given to calculate scaled drift')
-        vec_mag = np.sum(vec**2.,axis=1)
+        vec_sq = np.sum(vec**2.,axis=1)
         # Umrigar, JCP 99, 2865 (1993).
-        vscale  = (-1.+np.sqrt(1+2*vec_mag**2.*tau))/(vec_mag**2.*tau)
+        vscale  = (-1.+np.sqrt(1+2*vec_sq*tau))/(vec_sq*tau)
         dvec   *= vscale[:,np.newaxis,:]
     return dvec
+
+#####################################
 
 def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
   """
@@ -62,9 +64,9 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
 
     # propose a move
     gauss_move_old = np.random.randn(*posold.shape)
-    posnew=posold+tau*gauss_move_old
+    posnew=posold+np.sqrt(tau)*gauss_move_old
     if use_drift:
-        posnew  += tau*driftold
+        posnew += tau*driftold
 
     wfnew=wf.value(posnew)
 
@@ -72,18 +74,19 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
     prob = wfnew**2/wfold**2
     if use_drift:
         driftnew = drift_vector(posnew,wf,tau=tau,scaled=True)
-        gauss_move_new = (posold-posnew)/tau - driftnew
+        gauss_move_new = (posold-posnew-tau*driftnew)/np.sqrt(tau)
         #assert np.allclose( posold,posnew+tau*(gauss_move_new+driftnew) ) 
         gauss_old_sq = np.sum( np.sum(gauss_move_old**2.,axis=1) ,axis=0)
         gauss_new_sq = np.sum( np.sum(gauss_move_new**2.,axis=1), axis=0)
-        ln_Tnew_over_Told = (gauss_old_sq-gauss_new_sq)/2.
-        prob *= np.exp(ln_Tnew_over_Told)
+        forward_green  = np.exp(-gauss_old_sq/2.)
+        backward_green = np.exp(-gauss_new_sq/2.)
+        prob *= backward_green/forward_green
 
     # get indices of accepted moves
     acc_idx = prob + np.random.random_sample(nconf) > 1.0
 
-    # record
-    posold[:,:,acc_idx]   = posnew[:,:,acc_idx]
+    # update old values for accepted configurations
+    posold[:,:,acc_idx] = posnew[:,:,acc_idx]
     if use_drift:
         driftold[:,:,acc_idx] = driftnew[:,:,acc_idx]
     wfold[acc_idx] = wfnew[acc_idx]
@@ -197,7 +200,7 @@ def test_hellium(
   print( "Cycle finished; acceptance = {acc:3.2f}.".format(acc=acc) )
   for nm,quant,ref in zip(['kinetic','potential','total']
                          ,[ ke,       pot,        eloc]
-                         ,[ 2.7,      -5.4,       -2.7]):
+                         ,[ 2.848, -5.696,      -2.848]):
     avg=np.mean(quant)
     err=np.std(quant)/np.sqrt(nconfig)
     print( "{name:20s} = {avg:10.6f} +- {err:8.6f}; reference = {ref:5.2f}".format(
@@ -208,4 +211,4 @@ if __name__=="__main__":
   test_cusp()
   test_vmc(use_drift=False)
   test_vmc(use_drift=True)
-  test_hellium(tau=0.1,use_drift=True,wf=wavefunction.JastrowWF(1000))
+  test_hellium(tau=0.5,use_drift=True,wf=wavefunction.JastrowWF(1000))
