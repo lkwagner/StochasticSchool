@@ -15,30 +15,64 @@ class Hamiltonian:
     self.Z=Z
     pass
   def pot_en(self,pos):
-    """ electron-nuclear potential for configuration pos """
+    """ electron-nuclear potential of configurations 'pos' """
     r=np.sqrt(np.sum(pos**2,axis=1))
     return np.sum(-self.Z/r,axis=0)
   def pot_ee(self,pos):
-    """ electron-electron potential for configuration pos """
+    """ electron-electron potential of configurations 'pos' """
     ree=np.sqrt(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0))
     return 1/ree
   def pot(self,pos):
+    """ potential energy of configuations 'pos' """
     return self.pot_en(pos)+self.pot_ee(pos)
 
 #####################################
 
 def drift_vector(pos,wf,tau=None,scaled=False):
-    """ return drift needed for electrons to importance sample psi^2 """
-    vec = wf.gradient(pos) 
-    dvec= vec # (grad_ln_psisq)/(2m) = grad_psi_over_psi
+    """ calculate the drift vector for importance sampling
+    Input:
+       pos: 3D numpy array of electron positions (nelec,ndim,nconf)
+       wf:  wavefunction to be sampled (i.e. psi)
+    Return: 
+       dvec: drift vector needed for electrons to importance sample psi^2
+    """
+
+    # drift vector = (\nabla^2\ln\psi^2)/(2m) = grad_psi_over_psi
+    dvec= wf.gradient(pos) 
     if scaled: # rescale drift vector to limit its magnitude near psi=0
         if tau is None:
             raise RuntimeError('time step must be given to calculate scaled drift')
-        vec_sq = np.sum(vec**2.,axis=1)
+        vec_sq = np.sum(dvec**2.,axis=1)
         # Umrigar, JCP 99, 2865 (1993).
         vscale  = (-1.+np.sqrt(1+2*vec_sq*tau))/(vec_sq*tau)
         dvec   *= vscale[:,np.newaxis,:]
     return dvec
+
+def drift_prob(posold,posnew,gauss_move_old,driftnew,tau):
+    """ return the ratio of forward and backfward move probabilities for rejection algorith,
+    Input:
+      posold: electron positions before move (nelec,ndim,nconf) 
+      posnew: electron positions after  move (nelec,ndim,nconf)
+      gauss_move_old: randn() numbers for forward move
+      driftnew: drift vector at posnew 
+      tau: time step
+    Return:
+      ratio: [backward move prob.]/[forward move prob.]
+      """
+
+    # randn numbers needed for backward move
+    gauss_move_new = (posold-posnew-tau*driftnew)/np.sqrt(tau)
+    # assume the following drift-diffusion move
+    #assert np.allclose( posold,posnew+np.sqrt(tau)*gauss_move_new+tau*driftnew ) 
+
+    # calculate move probabilities
+    gauss_old_sq = np.sum( np.sum(gauss_move_old**2.,axis=1) ,axis=0)
+    gauss_new_sq = np.sum( np.sum(gauss_move_new**2.,axis=1), axis=0)
+    forward_green  = np.exp(-gauss_old_sq/2.)
+    backward_green = np.exp(-gauss_new_sq/2.)
+
+    ratio = backward_green/forward_green
+    return ratio
 
 #####################################
 
@@ -70,22 +104,17 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
 
     wfnew=wf.value(posnew)
 
-    # calculate acceptance probability
-    prob = wfnew**2/wfold**2
-    if use_drift:
+    # calculate Metropolis-Rosenbluth-Teller acceptance probability
+    #  VMC uses rejection to sample psi_sq by maintaining detailed balance
+    prob = wfnew**2/wfold**2 # for reversible moves
+    if use_drift: # multiply ratio of probabilities of backward/forward moves
         driftnew = drift_vector(posnew,wf,tau=tau,scaled=True)
-        gauss_move_new = (posold-posnew-tau*driftnew)/np.sqrt(tau)
-        #assert np.allclose( posold,posnew+tau*(gauss_move_new+driftnew) ) 
-        gauss_old_sq = np.sum( np.sum(gauss_move_old**2.,axis=1) ,axis=0)
-        gauss_new_sq = np.sum( np.sum(gauss_move_new**2.,axis=1), axis=0)
-        forward_green  = np.exp(-gauss_old_sq/2.)
-        backward_green = np.exp(-gauss_new_sq/2.)
-        prob *= backward_green/forward_green
+        prob *= drift_prob(posold,posnew,gauss_move_old,driftnew,tau)
 
     # get indices of accepted moves
-    acc_idx = prob + np.random.random_sample(nconf) > 1.0
+    acc_idx = (prob + np.random.random_sample(nconf) > 1.0)
 
-    # update old values for accepted configurations
+    # update stale stored values for accepted configurations
     posold[:,:,acc_idx] = posnew[:,:,acc_idx]
     if use_drift:
         driftold[:,:,acc_idx] = driftnew[:,:,acc_idx]
@@ -211,4 +240,4 @@ if __name__=="__main__":
   test_cusp()
   test_vmc(use_drift=False)
   test_vmc(use_drift=True)
-  test_hellium(tau=0.5,use_drift=True,wf=wavefunction.JastrowWF(1000))
+  test_hellium(tau=0.4,use_drift=True,wf=wavefunction.JastrowWF(1e9))
