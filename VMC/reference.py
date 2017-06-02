@@ -7,24 +7,8 @@
 #and how much we want to have them develop.
 import numpy as np
 import wavefunction
+from hamiltonian import Hamiltonian
 
-#####################################
-
-class Hamiltonian:
-  def __init__(self,Z=2):
-    self.Z=Z
-    pass
-  def pot_en(self,pos):
-    """ electron-nuclear potential of configurations 'pos' """
-    r=np.sqrt(np.sum(pos**2,axis=1))
-    return np.sum(-self.Z/r,axis=0)
-  def pot_ee(self,pos):
-    """ electron-electron potential of configurations 'pos' """
-    ree=np.sqrt(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0))
-    return 1/ree
-  def pot(self,pos):
-    """ potential energy of configuations 'pos' """
-    return self.pot_en(pos)+self.pot_ee(pos)
 
 #####################################
 
@@ -75,8 +59,7 @@ def drift_prob(posold,posnew,gauss_move_old,driftnew,tau):
     return ratio
 
 #####################################
-
-def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
+def metropolis_sample_biased(pos,wf,tau=0.01,nstep=1000):
   """
   Input variables:
     pos: a 3D numpy array with indices (electron,[x,y,z],configuration ) 
@@ -90,8 +73,7 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
   posnew = pos.copy()
   posold = pos.copy()
   wfold  = wf.value(posold)
-  if use_drift:
-    driftold = drift_vector(posold,wf,tau=tau,scaled=True)
+  driftold = drift_vector(posold,wf,tau=tau,scaled=True)
   acceptance=0.0
   nconf=pos.shape[2]
   for istep in range(nstep):
@@ -99,25 +81,62 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000,use_drift=False):
     # propose a move
     gauss_move_old = np.random.randn(*posold.shape)
     posnew=posold+np.sqrt(tau)*gauss_move_old
-    if use_drift:
-        posnew += tau*driftold
+    posnew += tau*driftold
 
     wfnew=wf.value(posnew)
 
     # calculate Metropolis-Rosenbluth-Teller acceptance probability
     #  VMC uses rejection to sample psi_sq by maintaining detailed balance
     prob = wfnew**2/wfold**2 # for reversible moves
-    if use_drift: # multiply ratio of probabilities of backward/forward moves
-        driftnew = drift_vector(posnew,wf,tau=tau,scaled=True)
-        prob *= drift_prob(posold,posnew,gauss_move_old,driftnew,tau)
+    driftnew = drift_vector(posnew,wf,tau=tau,scaled=True)
+    prob *= drift_prob(posold,posnew,gauss_move_old,driftnew,tau)
 
     # get indices of accepted moves
     acc_idx = (prob + np.random.random_sample(nconf) > 1.0)
 
     # update stale stored values for accepted configurations
     posold[:,:,acc_idx] = posnew[:,:,acc_idx]
-    if use_drift:
-        driftold[:,:,acc_idx] = driftnew[:,:,acc_idx]
+    driftold[:,:,acc_idx] = driftnew[:,:,acc_idx]
+    wfold[acc_idx] = wfnew[acc_idx]
+    acceptance += np.mean(acc_idx)/nstep
+
+  return posold,acceptance
+
+
+#####################################
+
+
+def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
+  """
+  Input variables:
+    pos: a 3D numpy array with indices (electron,[x,y,z],configuration ) 
+    wf: a Wavefunction object with value(), gradient(), and laplacian()
+  Returns: 
+    posnew: A 3D numpy array of configurations the same shape as pos, distributed according to psi^2
+    acceptance ratio: 
+  """
+
+  # initialize
+  posnew = pos.copy()
+  posold = pos.copy()
+  wfold  = wf.value(posold)
+  acceptance=0.0
+  nconf=pos.shape[2]
+  for istep in range(nstep):
+    # propose a move
+    gauss_move_old = np.random.randn(*posold.shape)
+    posnew=posold+np.sqrt(tau)*gauss_move_old
+
+    wfnew=wf.value(posnew)
+
+    # calculate Metropolis-Rosenbluth-Teller acceptance probability
+    prob = wfnew**2/wfold**2 # for reversible moves
+
+    # get indices of accepted moves
+    acc_idx = (prob + np.random.random_sample(nconf) > 1.0)
+
+    # update stale stored values for accepted configurations
+    posold[:,:,acc_idx] = posnew[:,:,acc_idx]
     wfold[acc_idx] = wfnew[acc_idx]
     acceptance += np.mean(acc_idx)/nstep
 
@@ -181,7 +200,10 @@ def test_vmc(
   # initialize electrons randomly
   possample     = np.random.randn(nelec,ndim,nconfig)
   # sample exact wave function
-  possample,acc = metropolis_sample(possample,wf,tau=tau,nstep=nstep,use_drift=use_drift)
+  if use_drift:
+    possample,acc = metropolis_sample(possample,wf,tau=tau,nstep=nstep)
+  else:
+    possample,acc = metropolis_sample_biased(possample,wf,tau=tau,nstep=nstep)
 
   # calculate kinetic energy
   ke   = -0.5*np.sum(wf.laplacian(possample),axis=0)
