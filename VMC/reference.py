@@ -8,7 +8,7 @@
 import numpy as np
 import wavefunction
 from hamiltonian import Hamiltonian
-
+from metropolis import metropolis_sample
 
 #####################################
 
@@ -103,44 +103,6 @@ def metropolis_sample_biased(pos,wf,tau=0.01,nstep=1000):
 
 #####################################
 
-
-def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
-  """
-  Input variables:
-    pos: a 3D numpy array with indices (electron,[x,y,z],configuration ) 
-    wf: a Wavefunction object with value(), gradient(), and laplacian()
-  Returns: 
-    posnew: A 3D numpy array of configurations the same shape as pos, distributed according to psi^2
-    acceptance ratio: 
-  """
-
-  # initialize
-  posnew = pos.copy()
-  posold = pos.copy()
-  wfold  = wf.value(posold)
-  acceptance=0.0
-  nconf=pos.shape[2]
-  for istep in range(nstep):
-    # propose a move
-    gauss_move_old = np.random.randn(*posold.shape)
-    posnew=posold+np.sqrt(tau)*gauss_move_old
-
-    wfnew=wf.value(posnew)
-
-    # calculate Metropolis-Rosenbluth-Teller acceptance probability
-    prob = wfnew**2/wfold**2 # for reversible moves
-
-    # get indices of accepted moves
-    acc_idx = (prob + np.random.random_sample(nconf) > 1.0)
-
-    # update stale stored values for accepted configurations
-    posold[:,:,acc_idx] = posnew[:,:,acc_idx]
-    wfold[acc_idx] = wfnew[acc_idx]
-    acceptance += np.mean(acc_idx)/nstep
-
-  return posold,acceptance
-
-#####################################
 
 def local_energy(pos,wf,ham):
   return -0.5*np.sum(wf.laplacian(pos),axis=0)+ham.pot(pos)
@@ -237,7 +199,7 @@ def test_hellium(
   # initialize electrons randomly
   possample     = np.random.randn(nelec,ndim,nconfig)
   # sample trial wave function
-  possample,acc = metropolis_sample(possample,wf,tau=tau,nstep=nstep,use_drift=use_drift)
+  possample,acc = metropolis_sample(possample,wf,tau=tau,nstep=nstep)
 
   # calculate kinetic energy
   ke   = -0.5*np.sum(wf.laplacian(possample),axis=0)
