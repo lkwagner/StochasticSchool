@@ -1,0 +1,54 @@
+\documentclass[12pt]{article}
+\usepackage{helvet}
+\usepackage{fullpage}
+\newcommand{\bR}{{\bf R}}
+\newcommand{\bP}{{\bf P}}
+\begin{document}
+
+\section{Implementing the pieces}
+
+In order to implement a variational Monte Carlo (VMC) program, we need:
+\begin{itemize}
+	\item $\Psi(\bR,\bP)$, $\nabla \Psi(\bR,\bP)$, and $\nabla^2 \Psi(\bR,\bP)$
+	\item A way to compute $\frac{H\Psi(\bR,\bP)}{\Psi(\bR,\bP)}$
+	\item A function to generate samples with probability proportional to $|\Psi|^2$
+\end{itemize}
+
+\subsection{Wave function object}
+
+\subsubsection{Testing}
+
+Numerical versus analytic gradients.
+
+\subsection{Hamiltonian object}
+
+Here we implement 
+
+\subsubsection{Testing}
+
+Known potential configurations.
+
+\subsection{Metropolis algorithm}
+
+\subsubsection{Testing}
+
+Exact wave function averages. Kinetic energy and potential energy.
+
+\section{Optimizing one parameter}
+
+\section{Add a Jastrow factor: optimizing two parameters} 
+
+\section{Computing expectation values}
+
+\subsection{Radial distribution function} 
+
+\section{The linear method for optimization} 
+
+\begin{itemize}
+\item Definition of quantities
+\end{itemize}
+
+\subsection{Programming parameter derivatives}
+
+
+\end{document}
