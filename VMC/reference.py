@@ -12,7 +12,7 @@ from hamiltonian import Hamiltonian
 
 #####################################
 
-def drift_vector(pos,wf,tau=None,scaled=False):
+def drift_vector(pos,wf,tau,scaled=False):
     """ calculate the drift vector for importance sampling
     Input:
        pos: 3D numpy array of electron positions (nelec,ndim,nconf)
@@ -24,8 +24,6 @@ def drift_vector(pos,wf,tau=None,scaled=False):
     # drift vector = (\nabla^2\ln\psi^2)/(2m) = grad_psi_over_psi
     dvec= wf.gradient(pos) 
     if scaled: # rescale drift vector to limit its magnitude near psi=0
-        if tau is None:
-            raise RuntimeError('time step must be given to calculate scaled drift')
         vec_sq = np.sum(dvec**2.,axis=1)
         # Umrigar, JCP 99, 2865 (1993).
         vscale  = (-1.+np.sqrt(1+2*vec_sq*tau))/(vec_sq*tau)
