@@ -5,7 +5,7 @@ import numpy as np
 #either the value of the wave function or derivatives.
 class Wavefunction:
   """ 
-  Skelton class for wavefunctions.
+  Skeleton class for wavefunctions.
   Positions are three index arrays as follows:
     [particle,dimension,configuration]
   """
@@ -59,18 +59,14 @@ class JastrowWF:
   """
   Jastrow factor of the form 
 
-  exp(J_ee + J_en)
+  exp(J_ee)
 
   J_ee = a_ee|r_1 - r_2| / (1 + b_ee |r_1 - r_2|)
-  J_en = (sum over i) a_en|r_i| / (1 + b_en |r_i|)
 
   Set by cusp conditions:
   a_ee = 0.5 
-  a_en = -2.0
   b_ee = (a_ee/c)**0.5
-  b_en = (-a_en/c)**0.5
 
-  c is a free parameter.
   """
   def __init__(self,free_param,Z=2.0):
     self.Z=Z # nuclear charge, default to He
@@ -78,35 +74,27 @@ class JastrowWF:
 
     # Parameters to satisfy cusp conditions.
     self.eep_num=0.5
-    self.enp_num=-Z
     self.eep_den=(self.eep_num/self.freep)**0.5
-    self.enp_den=(-self.enp_num/self.freep)**0.5
   #-------------------------
 
   def value(self,pos):
-    dist=np.sqrt(np.sum(pos**2,axis=1))
     eedist=np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5
     exp_ee=(self.eep_num*eedist)/(1 + self.eep_den*eedist)
-    exp_en=np.sum((self.enp_num*dist)/(1 + self.enp_den*dist),axis=0)
-    return np.exp(exp_ee + exp_en)
+    return np.exp(exp_ee)
   #-------------------------
 
   def gradient(self,pos):
-    dist=np.sqrt(np.sum(pos**2,axis=1))[:,np.newaxis,:]
     eedist=(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5)[np.newaxis,:]
     # Partial derivatives of distance to nucleus and electron-electron distance.
-    pden=pos/dist
     pdee=np.outer([1,-1],(pos[0,:,:]-pos[1,:,:])/eedist).reshape(pos.shape)
 
     grad_ee=self.eep_num*pdee/(1+self.eep_den*eedist)**2
-    grad_en=self.enp_num*pden/(1+self.enp_den*dist)**2
-    return grad_ee + grad_en
+    return grad_ee 
   #-------------------------
 
   def laplacian(self,pos):
     dist=np.sqrt(np.sum(pos**2,axis=1))[:,np.newaxis,:]
     eedist=(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5)[np.newaxis,:]
-    jden=1+self.enp_den*dist
     jdee=1+self.eep_den*eedist
     pden=pos/dist
     # Partial derivatives of distance to nucleus and electron-electron distance.
@@ -121,19 +109,8 @@ class JastrowWF:
         (self.eep_num*pd2ee*jdee - 2*self.eep_num*self.eep_den*pdee2)/jdee**3,
         axis=0)
     lap_ee+=np.sum(self.eep_num**2*pdee2/jdee**4,axis=0)
-
-    # Electron-nuclear part
-    lap_en=np.sum( 
-        (self.enp_num*pd2en*jden - 2*self.enp_num*self.enp_den*pden**2)/jden**3,
-        axis=1)
-    lap_en+=np.sum(self.enp_num**2*pden**2/jden**4,axis=1)
-    
-    # Cross term
-    grad_ee=self.eep_num*pdee/(1+self.eep_den*eedist)**2
-    grad_en=self.enp_num*pden/(1+self.enp_den*dist)**2
-    lap_xs=2*np.sum(grad_ee*grad_en,axis=1)
-
-    return lap_ee[np.newaxis,:] + lap_en + lap_xs
+    print(lap_ee)
+    return np.array([lap_ee,lap_ee])
   #-------------------------
 
 ########################################
@@ -203,13 +180,13 @@ def test_wavefunction(wf):
   """ Convenience function for running several tests on a wavefunction. """
   testpos=np.random.randn(2,3,5)
   df={'delta':[],
-      'derivative':[],
-      'laplacian':[]
+      'derivative err':[],
+      'laplacian err':[]
       }
   for delta in [1e-2,1e-3,1e-4,1e-5,1e-6]:
     df['delta'].append(delta)
-    df['derivative'].append(derivative_test(testpos,wf,delta))
-    df['laplacian'].append(laplacian_test(testpos,wf,delta))
+    df['derivative err'].append(derivative_test(testpos,wf,delta))
+    df['laplacian err'].append(laplacian_test(testpos,wf,delta))
 
   import pandas as pd
   print("RMS differences")
