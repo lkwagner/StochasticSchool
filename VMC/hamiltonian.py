@@ -18,3 +18,10 @@ class Hamiltonian:
     """ potential energy of configuations 'pos' """
     return self.pot_en(pos)+self.pot_ee(pos)
 
+
+if __name__=="__main__":
+  pos=np.array([[[0.1],[0.2],[0.3]],[[0.2],[-0.1],[-0.2]]])
+  ham=Hamiltonian()
+  print(ham.pot_en(pos),[-12.0118915])
+  print(ham.pot_ee(pos),[ 1.69030851])
+  print(ham.pot(pos),[-10.321583])
