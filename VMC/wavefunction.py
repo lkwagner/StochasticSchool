@@ -1,5 +1,4 @@
 import numpy as np
-from slaterwf import ExponentSlaterWF
 
 class JastrowWF:
   """
@@ -144,18 +143,11 @@ if __name__=="__main__":
   import pandas as pd
   testpos=np.random.randn(2,3,5)
 
-  print("Exponent wavefunction")
-  ewf=ExponentSlaterWF(0.5)
-  test_wavefunction(ExponentSlaterWF(0.5))
-
   print("Jastrow wavefunction")
   jas=JastrowWF(1.0)
   test_wavefunction(jas)
 
   print("Multiplied wavefunction")
-  mwf=MultiplyWF(ExponentSlaterWF(0.5),ExponentSlaterWF(0.6))
+  mwf=MultiplyWF(JastrowWF(1.0),JastrowWF(0.8))
   test_wavefunction(mwf)
 
-  print("Slater-Jastrow wavefunction")
-  sjwf=MultiplyWF(ExponentSlaterWF(0.5),JastrowWF(1.0))
-  test_wavefunction(sjwf)
