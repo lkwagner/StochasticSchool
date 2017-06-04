@@ -6,55 +6,34 @@ class JastrowWF:
 
   exp(J_ee)
 
-  J_ee = a_ee|r_1 - r_2| / (1 + b_ee |r_1 - r_2|)
-
-  Set by cusp conditions:
-  a_ee = 0.5 
-  b_ee = (a_ee/c)**0.5
+  J_ee = a_ee|r_1 - r_2| 
 
   """
-  def __init__(self,free_param,Z=2.0):
-    self.Z=Z # nuclear charge, default to He
-    self.freep=free_param
-
-    # Parameters to satisfy cusp conditions.
-    self.eep_num=0.5
-    self.eep_den=(self.eep_num/self.freep)**0.5
+  def __init__(self,a_ee):
+    self.a_ee=a_ee
   #-------------------------
 
   def value(self,pos):
-    eedist=np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5
-    exp_ee=(self.eep_num*eedist)/(1 + self.eep_den*eedist)
+    eedist=np.sqrt(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0))
+    exp_ee=(self.a_ee*eedist) #/(1 + self.eep_den*eedist)
     return np.exp(exp_ee)
   #-------------------------
 
   def gradient(self,pos):
     eedist=(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5)[np.newaxis,:]
-    # Partial derivatives of distance to nucleus and electron-electron distance.
+    # Partial derivatives of electron-electron distance.
     pdee=np.outer([1,-1],(pos[0,:,:]-pos[1,:,:])/eedist).reshape(pos.shape)
-
-    grad_ee=self.eep_num*pdee/(1+self.eep_den*eedist)**2
+    grad_ee=self.a_ee*pdee 
     return grad_ee 
   #-------------------------
 
   def laplacian(self,pos):
-    dist=np.sqrt(np.sum(pos**2,axis=1))[:,np.newaxis,:]
     eedist=(np.sum((pos[0,:,:]-pos[1,:,:])**2,axis=0)**0.5)[np.newaxis,:]
-    jdee=1+self.eep_den*eedist
-    pden=pos/dist
-    # Partial derivatives of distance to nucleus and electron-electron distance.
-    pden=pos/dist
-    pd2en=(dist**2-pos**2)/dist**3
     pdee=np.outer([1,-1],(pos[0,:,:]-pos[1,:,:])/eedist).reshape(pos.shape)
     pdee2=pdee[0]**2 # Sign doesn't matter if squared.
     pd2ee=(eedist**2-(pos[0,:,:]-pos[1,:,:])**2)/eedist**3
-
-    # Electron-electron part.
-    lap_ee=np.sum( 
-        (self.eep_num*pd2ee*jdee - 2*self.eep_num*self.eep_den*pdee2)/jdee**3,
-        axis=0)
-    lap_ee+=np.sum(self.eep_num**2*pdee2/jdee**4,axis=0)
-    print(lap_ee)
+    lap_ee=np.sum(self.a_ee*pd2ee + self.a_ee**2*pdee2,axis=0)
+    #Laplacian is the same for both electrons
     return np.array([lap_ee,lap_ee])
   #-------------------------
 
@@ -122,7 +101,7 @@ def laplacian_test(testpos,wf,delta=1e-5):
 ########################################
 
 def test_wavefunction(wf):
-  """ Convenience function for running several tests on a wavefunction. """
+  """ test """
   testpos=np.random.randn(2,3,5)
   df={'delta':[],
       'derivative err':[],
@@ -134,8 +113,9 @@ def test_wavefunction(wf):
     df['laplacian err'].append(laplacian_test(testpos,wf,delta))
 
   import pandas as pd
-  print("RMS differences")
-  print(pd.DataFrame(df))
+  df=pd.DataFrame(df)
+  print(df)
+  return df
 
 ########################################
 
