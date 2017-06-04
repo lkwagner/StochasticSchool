@@ -37,6 +37,6 @@ if __name__=="__main__":
       df['acceptance'].append(acc)
 
   import pandas as pd
-  pd.DataFrame(df).to_csv("helium_slater.csv",index=False)
+  pd.DataFrame(df).to_csv("helium.csv",index=False)
       
 
