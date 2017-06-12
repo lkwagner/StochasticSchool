@@ -46,6 +46,8 @@ def test_metropolis(
       nstep=100,
       tau=0.5
     ):
+  from slaterwf import ExponentSlaterWF
+  from hamiltonian import Hamiltonian
   
   wf=ExponentSlaterWF(alpha=1.0)
   ham=Hamiltonian(Z=1)
@@ -70,7 +72,5 @@ def test_metropolis(
       name=nm, avg=avg, err=err, ref=ref) )
 
 if __name__=="__main__":
-  from slaterwf import ExponentSlaterWF
-  from hamiltonian import Hamiltonian
   test_metropolis()
   
