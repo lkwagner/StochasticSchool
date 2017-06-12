@@ -39,14 +39,13 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
 
 ##########################################   Test
 
-if __name__=="__main__":
-  from slaterwf import ExponentSlaterWF
-  from hamiltonian import Hamiltonian
-  nconfig=1000
-  ndim=3
-  nelec=2
-  nstep=100
-  tau=0.5
+def test_metropolis(
+      nconfig=1000,
+      ndim=3,
+      nelec=2,
+      nstep=100,
+      tau=0.5
+    ):
   
   wf=ExponentSlaterWF(alpha=1.0)
   ham=Hamiltonian(Z=1)
@@ -69,4 +68,9 @@ if __name__=="__main__":
     err=np.std(quant)/np.sqrt(nconfig)
     print( "{name:20s} = {avg:10.6f} +- {err:8.6f}; reference = {ref:5.2f}".format(
       name=nm, avg=avg, err=err, ref=ref) )
+
+if __name__=="__main__":
+  from slaterwf import ExponentSlaterWF
+  from hamiltonian import Hamiltonian
+  test_metropolis()
   
