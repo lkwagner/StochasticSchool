@@ -2,37 +2,79 @@
 \usepackage{helvet}
 \usepackage{fullpage}
 \newcommand{\bR}{{\bf R}}
+\newcommand{\br}{{\bf r}}
 \newcommand{\bP}{{\bf P}}
 \begin{document}
+
+\section{The system} 
+
+We will implement variational Monte Carlo for the He atom. 
+
+\subsection{Learning objectives}
+\begin{itemize}
+\item How to compute wave functions and expectation value.
+\item How to sample many-body wave functions using the Metropolis algorithm.
+\item The interplay between interactions and correlations. 
+\end{itemize}
+
 
 \section{Implementing the pieces}
 
 In order to implement a variational Monte Carlo (VMC) program, we need:
 \begin{itemize}
-	\item $\Psi(\bR,\bP)$, $\nabla \Psi(\bR,\bP)$, and $\nabla^2 \Psi(\bR,\bP)$
-	\item A way to compute $\frac{H\Psi(\bR,\bP)}{\Psi(\bR,\bP)}$
-	\item A function to generate samples with probability proportional to $|\Psi|^2$
+	\item $\Psi(\bR,\bP)$, $\nabla \Psi(\bR,\bP)$, and $\nabla^2 \Psi(\bR,\bP)$ (slaterwf.py)
+	\item A way to compute $\frac{H\Psi(\bR,\bP)}{\Psi(\bR,\bP)}$ (hamiltonian.py)
+	\item A function to generate samples with probability proportional to $|\Psi|^2$ (metropolis.py)
 \end{itemize}
 
-\subsection{Wave function object}
+Each of these files has a testing program built-in that you can use to evaluate your implementation.
+
+\subsection{Wave function object (slaterwf.py)}
+
+\begin{equation}
+\Psi(\bR)=\exp(-\alpha r_1) \exp(-\alpha r_2)	
+\end{equation}
+
+The variational parameter is $\alpha$.
 
 \subsubsection{Testing}
 
 Numerical versus analytic gradients.
 
-\subsection{Hamiltonian object}
+\subsection{Hamiltonian object (hamiltonian.py)}
 
+\begin{equation}
+\frac{\hat{H}\Psi(\bR)}{\Psi(\bR) } = -\frac{1}{2} \sum_i \frac{\nabla_i^2 \Psi(\bR)}{\Psi(\bR)} - \sum_i \frac{2}{r_i} + \frac{1}{r_{12}},
+\end{equation}
+where $r_{12}=|\br_1-\br_2|$ is the distance between the two electrons.
+
+\subsubsection{Testing}
+
+We have computed the potential energy for a few configurations by hand. 
+
+\subsection{Metropolis algorithm (metropolis.py)}
+
+We would like to draw $\bR$ from the distribution $\Psi^2(\bR)$. 
+The Metropolis-Hastings algorithm does this by the following process:
+\begin{enumerate}
+\item Start with an initial configuration $\bR_0$. 	
+\item Propose a new configuration $\bR'=\bR_0 + \sqrt{\tau} \chi$, where $\chi$ is a gaussian random number.
+\item Compute the acceptance probability $a=\frac{\Psi^2(\bR')}{\Psi^2(\bR_0)}$
+\item Generate a uniform random number $u$ between 0 and 1. 
+\item If $u < a$, then set $\bR_1=\bR'$. Otherwise, set $\bR_1=\bR_0$.
+\end{enumerate}
+
+Useful functions: 
+\begin{itemize}
+\item np.random.randn()
+\item np.random.random()
+\item Conditional slices in numpy: R[:,:,$u<a$]=Rprime[:,:,$u<a$]
+\end{itemize}
 
 
 \subsubsection{Testing}
 
-Known potential configurations.
-
-\subsection{Metropolis algorithm}
-
-\subsubsection{Testing}
-
-Exact wave function averages. Kinetic energy and potential energy.
+Exact wave function averages for non-interacting particles. We check kinetic, potential, and total energy.
 
 \section{Optimizing one parameter}
 
@@ -47,13 +89,28 @@ At this point we have a system that can evaluate properties of a wave function.
 
 \section{Add a Jastrow factor: optimizing two parameters} 
 
-Compare the $\exp(0.5r_{12})$ factor to no Jastrow. We will not optimize them in detail because there are better techniques.
+We have implemented a Jastrow wave function and an object MultiplyWF which can construct a Slater-Jastrow wave function.
+You can construct it by doing
+\begin{verbatim}
+wf=MultiplyWF(SlaterWF(alpha),JastrowWF(beta))	
+\end{verbatim}
+The functional form of this simple Jastrow factor is 
+\begin{equation}
+\Psi_J(\bR) = \exp(\beta r_{12})	
+\end{equation}
+
+Optimize $\alpha$ with this new Jastrow. What happens to the optimal value? Why? 
 
 \section{Computing expectation values}
 
 \begin{itemize}
 \item Radial distribution function	
+\item Kinetic and potential energies. 
 \end{itemize}
+
+What happens to the average distance between electrons with the Jastrow factor? 
+
+How does the Jastrow factor affect 
 
 \section{The linear method for optimization} 
 
@@ -66,5 +123,7 @@ Compare the $\exp(0.5r_{12})$ factor to no Jastrow. We will not optimize them in
 
 
 \section{Improving the sampling: biased moves} 
+
+\section{Excited states: triplet. } 
 
 \end{document}
