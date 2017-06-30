@@ -8,9 +8,10 @@
 
 \section{The system} 
 
-You will implement variational Monte Carlo for the He atom. 
+You will implement variational Monte Carlo (VMC) for the He atom. 
 The algorithm works by sampling the integral:
 \begin{equation}
+  \label{eq:vmc}
   \langle
   E
   \rangle
@@ -101,7 +102,12 @@ The Metropolis-Hastings algorithm does this by the following process:
 \item If $u < a$, then set $\bR_1=\bR'$. Otherwise, set $\bR_1=\bR_0$.
 \end{enumerate}
 
-Useful functions: 
+The $\tau$ parameter is adjusted to maintain an efficient acceptance ratio. 
+An acceptance ratio between 0.5 and 0.7 is roughly desirable for VMC; for this first implementation, if the acceptance is too high or too low, it's a signal that the samples haven't been able to move too far from their starting point.
+You can play around with $\tau$ too see how it affects acceptance and the accuracy.
+
+Once again the missing parts are currently \verb|pass|, so fill these parts in before moving on. 
+Useful python tools are:
 \begin{itemize}
 \item np.random.randn()
 \item np.random.random()
@@ -110,14 +116,21 @@ Useful functions:
 
 \subsubsection{Testing}
 
-Exact wave function averages for non-interacting particles. We check kinetic, potential, and total energy.
+The test for this function will metropolis sample a Slater wave function and check it against exact solutions. 
+This test code is carrying out the integration of Eq. (\ref{eq:vmc}).
+
+Can you figure out why these are the exact answers?
+\textit{Hint}: Check out how the total energy of the wave function is being evaluated and have a look at the form of our trial wave function. 
+
+This should also tell you why the total energy is correct even before the Metropolis algorithm is correctly implemented, or when the acceptance is zero (meaning the sample is completely random).
+What happens when you change \verb|alpha| in that case?
 
 \section{Optimizing one parameter}
 
-At this point we have a system that can evaluate properties of a wave function. 
-
+At this point we have a system that can evaluate properties of a wave function.
+Now you can try to figure out the following:
 \begin{itemize}
-\item Where is the minimum if we don't include electron-electron interaction? Notice anything about the errors at that point?
+\item Where is the minimum energy if we don't include electron-electron interaction? Notice anything about the errors at that point?
 \item What happens to the minimum when interactions are included? Errors?
 \item What is the behavior of the kinetic and potential energies as a function of $\alpha$? Do they make sense?	
 \end{itemize}

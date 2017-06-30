@@ -16,23 +16,19 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
   wfold  = wf.value(posold)
   acceptance=0.0
   nconf=pos.shape[2]
+  # This loop performs the metropolis move many times to attempt to decorrelate the samples.
   for istep in range(nstep):
     # propose a move
-    gauss_move_old = np.random.randn(*posold.shape)
-    posnew=posold+np.sqrt(tau)*gauss_move_old
-
-    wfnew=wf.value(posnew)
+    pass
 
     # calculate Metropolis-Rosenbluth-Teller acceptance probability
-    prob = wfnew**2/wfold**2 # for reversible moves
+    pass
 
     # get indices of accepted moves
-    acc_idx = (prob + np.random.random_sample(nconf) > 1.0)
+    pass
 
     # update stale stored values for accepted configurations
-    posold[:,:,acc_idx] = posnew[:,:,acc_idx]
-    wfold[acc_idx] = wfnew[acc_idx]
-    acceptance += np.mean(acc_idx)/nstep
+    pass
 
   return posold,acceptance
 
@@ -46,6 +42,8 @@ def test_metropolis(
       nstep=100,
       tau=0.5
     ):
+  # This part of the code will test your implementation. 
+  # You can modify the parameters to see how they affect the results.
   from slaterwf import ExponentSlaterWF
   from hamiltonian import Hamiltonian
   
@@ -59,6 +57,7 @@ def test_metropolis(
   ke   = -0.5*np.sum(wf.laplacian(possample),axis=0)
   # calculate potential energy
   vion = ham.pot_en(possample)
+  # The local energy.
   eloc = ke+vion
   
   # report
