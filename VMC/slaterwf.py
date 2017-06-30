@@ -7,18 +7,27 @@ class ExponentSlaterWF:
   exponential orbitals.
   Member variables:
     alpha: decay parameter.
+
+  Note:
+  pos is an array such that
+    pos[i][j][k]
+  will return the j-th component of the i-th electron for the 
+  k-th sample (or "walker").
   """
   def __init__(self,alpha=1):
     self.alpha=alpha
 #-------------------------
   def value(self,pos):
     pass # Implement me!
+    return np.zeros(pos.shape[2])
 #-------------------------
   def gradient(self,pos):
     pass # Implement me!
+    return np.zeros(pos.shape)
 #-------------------------
   def laplacian(self,pos):
     pass # Implement me!
+    return np.zeros((pos.shape[0],pos.shape[2]))
 #-------------------------
 
 
