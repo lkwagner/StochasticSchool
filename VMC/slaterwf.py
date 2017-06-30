@@ -12,23 +12,19 @@ class ExponentSlaterWF:
     self.alpha=alpha
 #-------------------------
   def value(self,pos):
-    dist=np.sqrt(np.sum(pos**2,axis=1))
-    return np.exp(-self.alpha*dist[0,:])*np.exp(-self.alpha*dist[1,:])
+    pass # Implement me!
 #-------------------------
   def gradient(self,pos):
-    dist=np.sqrt(np.sum(pos**2,axis=1))
-    return -self.alpha*pos/dist[:,np.newaxis,:]
+    pass # Implement me!
 #-------------------------
   def laplacian(self,pos):
-    dist=np.sqrt(np.sum(pos**2,axis=1))
-    pos_over_dist=pos/dist[:,np.newaxis,:]
-    return np.sum(self.alpha**2 * pos_over_dist**2 
-        -self.alpha * (pos_over_dist - pos_over_dist**3)/pos, 
-        axis=1)
+    pass # Implement me!
 #-------------------------
 
 
 if __name__=="__main__":
+  # This part of the code will test your implementation. 
+  # Don't modify it!
   import wavefunction
   testpos=np.random.randn(2,3,5)
   print("Exponent wavefunction")

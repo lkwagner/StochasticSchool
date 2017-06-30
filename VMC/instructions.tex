@@ -17,7 +17,6 @@ We will implement variational Monte Carlo for the He atom.
 \item The interplay between interactions and correlations. 
 \end{itemize}
 
-
 \section{Implementing the pieces}
 
 In order to implement a variational Monte Carlo (VMC) program, we need:
@@ -31,15 +30,26 @@ Each of these files has a testing program built-in that you can use to evaluate 
 
 \subsection{Wave function object (slaterwf.py)}
 
+A good starting point for a trial wavefunction is a Slater determinant, but because there's only one electron of each spin, it's just a product of single particle orbitals. 
+For this exercise, we'll assume these orbitals are Gaussians.
 \begin{equation}
 \Psi(\bR)=\exp(-\alpha r_1) \exp(-\alpha r_2)	
 \end{equation}
 
 The variational parameter is $\alpha$.
+In order to calculate the energy and other useful properties of the wave function, you'll need to implement \verb|value(self,pos)|, \verb|gradient(self,pos)|, and \verb|laplacian(self,pos)| that return $\Psi(\bR,\bP)$, $\nabla \Psi(\bR,\bP)$, and $\nabla^2 \Psi(\bR,\bP)$, respectively. 
+Here, \verb|self| contains the parameters, $\bP$, and \verb|pos| represents an array of the positions of all the samples of both electrons. 
+There is a \verb|pass| keyword wherever code is missing. 
+Do this before moving on.
+
 
 \subsubsection{Testing}
 
-Numerical versus analytic gradients.
+Once you've finished implementing \verb|slaterwf.py|, try running the file with \verb|python slaterwf.py|. 
+It should print a table with the headers \verb|delta|, \verb|derivative err|, and \verb|laplacian err|. 
+This is produced by the code in the \verb|if __name__=="__main__":| section, which computes the derivatives numerically with finite difference, and compares it to your implementation. 
+The \verb|delta| controls the accuracy of finite difference, and thus the \verb|err| columns should be small ($\sim 10^{-3}$) and grow very small as \verb|delta| shrinks.
+If not, go back and check your code!
 
 \subsection{Hamiltonian object (hamiltonian.py)}
 
