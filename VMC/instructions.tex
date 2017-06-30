@@ -8,7 +8,26 @@
 
 \section{The system} 
 
-We will implement variational Monte Carlo for the He atom. 
+You will implement variational Monte Carlo for the He atom. 
+The algorithm works by sampling the integral:
+\begin{equation}
+  \langle
+  E
+  \rangle
+  =
+  \int
+  \frac{\hat{H} \Psi(\bR,\bP)}{\Psi(\bR,\bP)}
+  |\Psi(\bR,\bP)|^2
+  =
+  \frac{1}{N}
+  \sum_{R_i}^N
+  \lim_{N\to \infty}
+  \frac{\hat{H} \Psi(\bR_i,\bP)}{\Psi(\bR_i,\bP)}
+\end{equation}
+where the electron positions, $\bR_i$, are sampled in the sum with probability $|\Psi(\bR_i,\bP)|^2$.
+Here, $\bP$ are the variational parameters.
+Once you can compute $\langle E \rangle$, you can simply explore the values of $\bP$ to find the lowest energy.
+For the He atom, you'll find that this can get quite close to the exact ground state energy.
 
 \subsection{Learning objectives}
 \begin{itemize}
@@ -19,7 +38,7 @@ We will implement variational Monte Carlo for the He atom.
 
 \section{Implementing the pieces}
 
-In order to implement a variational Monte Carlo (VMC) program, we need:
+Looking at the equation for $\langle E \rangle$ above, you'll see that in order to implement a variational Monte Carlo (VMC) program, we need:
 \begin{itemize}
 	\item $\Psi(\bR,\bP)$, $\nabla \Psi(\bR,\bP)$, and $\nabla^2 \Psi(\bR,\bP)$ (slaterwf.py)
 	\item A way to compute $\frac{H\Psi(\bR,\bP)}{\Psi(\bR,\bP)}$ (hamiltonian.py)
@@ -39,9 +58,8 @@ For this exercise, we'll assume these orbitals are Gaussians.
 The variational parameter is $\alpha$.
 In order to calculate the energy and other useful properties of the wave function, you'll need to implement \verb|value(self,pos)|, \verb|gradient(self,pos)|, and \verb|laplacian(self,pos)| that return $\Psi(\bR,\bP)$, $\nabla \Psi(\bR,\bP)$, and $\nabla^2 \Psi(\bR,\bP)$, respectively. 
 Here, \verb|self| contains the parameters, $\bP$, and \verb|pos| represents an array of the positions of all the samples of both electrons. 
-There is a \verb|pass| keyword wherever code is missing. 
+There is a \verb|pass| keyword wherever code is missing that you should implement. 
 Do this before moving on.
-
 
 \subsubsection{Testing}
 
@@ -53,18 +71,27 @@ If not, go back and check your code!
 
 \subsection{Hamiltonian object (hamiltonian.py)}
 
+Next you need to be able to compute the local energy of the wave function, defined as:
 \begin{equation}
+E(\bR)
+\equiv
 \frac{\hat{H}\Psi(\bR)}{\Psi(\bR) } = -\frac{1}{2} \sum_i \frac{\nabla_i^2 \Psi(\bR)}{\Psi(\bR)} - \sum_i \frac{2}{r_i} + \frac{1}{r_{12}},
 \end{equation}
 where $r_{12}=|\br_1-\br_2|$ is the distance between the two electrons.
+You already have the first part from \verb|slaterwf.py|, now we just need the potential energies. 
+You'll implement these in \verb|hamiltonian.py|. 
+Like before, there are \verb|pass| where there is missing code. 
+Implement this before continuing. 
 
 \subsubsection{Testing}
 
-We have computed the potential energy for a few configurations by hand. 
+This time, we have computed the potential energy for a few configurations by hand. 
+The errors you should see should be around $10^{-9}$.
+Check that your errors are this small before continuing.
 
 \subsection{Metropolis algorithm (metropolis.py)}
 
-We would like to draw $\bR$ from the distribution $\Psi^2(\bR)$. 
+The next step is to draw $\bR$ from the distribution $\Psi^2(\bR)$. 
 The Metropolis-Hastings algorithm does this by the following process:
 \begin{enumerate}
 \item Start with an initial configuration $\bR_0$. 	
@@ -78,9 +105,8 @@ Useful functions:
 \begin{itemize}
 \item np.random.randn()
 \item np.random.random()
-\item Conditional slices in numpy: R[:,:,$u<a$]=Rprime[:,:,$u<a$]
+\item Conditional slices in numpy: \verb|R[:,:,u<a]=Rprime[:,:,u<a]|
 \end{itemize}
-
 
 \subsubsection{Testing}
 

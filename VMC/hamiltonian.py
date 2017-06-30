@@ -5,7 +5,6 @@ import numpy as np
 class Hamiltonian:
   def __init__(self,Z=2):
     self.Z=Z
-    pass
   def pot_en(self,pos):
     """ electron-nuclear potential of configurations 'pos' """
     r=np.sqrt(np.sum(pos**2,axis=1))
@@ -20,8 +19,11 @@ class Hamiltonian:
 
 
 if __name__=="__main__":
+  # This part of the code will test your implementation. 
+  # Don't modify it!
   pos=np.array([[[0.1],[0.2],[0.3]],[[0.2],[-0.1],[-0.2]]])
   ham=Hamiltonian()
-  print(ham.pot_en(pos),[-12.0118915])
-  print(ham.pot_ee(pos),[ 1.69030851])
-  print(ham.pot(pos),[-10.321583])
+  print("Error:")
+  print(ham.pot_en(pos) - -12.0118915)
+  print(ham.pot_ee(pos) -  1.69030851)
+  print(ham.pot(pos) - -10.321583)
