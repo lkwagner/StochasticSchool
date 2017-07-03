@@ -81,7 +81,3 @@ if __name__ == '__main__':
              )
   df.to_csv("dmc.csv",index=False)
 
-   # traces = test_dmc(weight_dmc)
-   # with open('traces.dat','w') as f:
-   #   f.write('# eloc etrial weight\n')
-   #   np.savetxt(f,traces) 
