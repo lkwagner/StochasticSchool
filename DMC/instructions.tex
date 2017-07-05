@@ -1,0 +1,84 @@
+\documentclass[12pt]{article}
+\usepackage{helvet}
+\usepackage{fullpage}
+\usepackage{amsmath}
+\begin{document}
+	{\bf Diffusion Monte Carlo } 
+
+\section*{The trajectories.} 
+
+We're going to write a series of implementations of diffusion Monte Carlo.
+Each implementation will generate data in the following form: 
+
+\begin{tabular}{ccccc}
+tau&step&config number&	local energy&weight\\
+\hline
+\end{tabular}
+
+
+	
+\section{Importance sampling} 
+
+For 1000 walkers, generate dynamics as follows: 
+\begin{equation}
+x_{n+1} = x_n + \sqrt{\tau}\chi + \tau \frac{\nabla \Psi_T(x_n)}{\Psi_T(x_n)},
+\end{equation}
+where $\chi$ is a random variable. 
+Set all weights to one.
+Make a CSV file and use Pandas to analyze your data. 
+
+\begin{itemize}
+\item What is the limiting behavior as $\tau$ goes to zero? It should match the VMC result for that trial function.	
+\end{itemize}
+
+\section{Importance sampling with weights}
+Now we will update the weights $w_i$. Set 
+\begin{equation}
+w*=	\exp[-\tau E_L(x_{n+1})] 
+\end{equation}
+each step.
+You probably don't need to perform this for too many steps!
+
+\begin{itemize}
+\item Track the weights of the walkers as a function of step. What happens?
+\end{itemize}
+
+\section{Fixing the normalization}
+
+We want the weights to average around 1.
+Use a shift 
+\begin{equation}
+w*=	\exp[-\tau (E_L(x_{n+1}-E_{\text{ref}})] 
+\end{equation}
+We can adjust $E_{\text {ref}}$ to ensure the weights average to one:
+\begin{equation}
+E_{\text{ref}}=E_{\text{ref}}-\log(\langle w \rangle) 
+\end{equation}
+where $\langle w \rangle$ is the average weight. 
+
+\begin{itemize}
+\item Now plot the weights. They should average to 1 but what happens to the variance?
+\end{itemize}
+
+\section{Branching} 
+
+We now want to split the walkers with too-large weights and kill the walkers with too-small weights. 
+There are many ways to do this; we will choose one that lets us keep the number of walkers constant. 
+Every step, 
+{\bf XXX-fill this in} 
+
+\section{Using the algorithm}
+Congratulations! We have now implemented the DMC algorithm. 
+Let's check some things:
+
+\begin{itemize}
+\item The exact energy is {\bf XXXXXX }. Do we get that in the $\tau\rightarrow0$ limit?
+\end{itemize}
+
+\section{More things to do}
+\begin{itemize}
+\item Add an acceptance/rejection step into the dynamical moves. What is the behavior of the average energy as a function of $\tau$? Can we improve the timestep error?	
+\end{itemize}
+
+
+\end{document}
