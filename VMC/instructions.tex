@@ -6,7 +6,7 @@
 \newcommand{\bP}{{\bf P}}
 \begin{document}
 
-\section{The system} 
+\section{Overview} 
 
 You will implement variational Monte Carlo (VMC) for the He atom. 
 The algorithm works by sampling the integral:
@@ -17,15 +17,16 @@ The algorithm works by sampling the integral:
   \rangle
   =
   \int
+  d^{3N} \bR
   \frac{\hat{H} \Psi(\bR,\bP)}{\Psi(\bR,\bP)}
   |\Psi(\bR,\bP)|^2
   =
-  \frac{1}{N}
-  \sum_{R_i}^N
-  \lim_{N\to \infty}
+  \lim_{M\to \infty}
+  \frac{1}{M}
+  \sum_{R_i}
   \frac{\hat{H} \Psi(\bR_i,\bP)}{\Psi(\bR_i,\bP)}
 \end{equation}
-where the electron positions, $\bR_i$, are sampled in the sum with probability $|\Psi(\bR_i,\bP)|^2$.
+where the samples of electron positions, $\{\bR_i\}_{i=1}^M$, are sampled with probability $|\Psi(\bR_i,\bP)|^2$.
 Here, $\bP$ are the variational parameters.
 Once you can compute $\langle E \rangle$, you can simply explore the values of $\bP$ to find the lowest energy.
 For the He atom, you'll find that this can get quite close to the exact ground state energy.
@@ -45,30 +46,31 @@ Looking at the equation for $\langle E \rangle$ above, you'll see that in order 
 	\item A way to compute $\frac{H\Psi(\bR,\bP)}{\Psi(\bR,\bP)}$ (hamiltonian.py)
 	\item A function to generate samples with probability proportional to $|\Psi|^2$ (metropolis.py)
 \end{itemize}
-
-Each of these files has a testing program built-in that you can use to evaluate your implementation.
+Each of these files has a test built-in that you can use to check your implementation.
 
 \subsection{Wave function object (slaterwf.py)}
 
 A good starting point for a trial wavefunction is a Slater determinant, but because there's only one electron of each spin, it's just a product of single particle orbitals. 
-For this exercise, we'll assume these orbitals are Gaussians.
+For this exercise, we'll assume these orbitals are exponentials.
 \begin{equation}
 \Psi(\bR)=\exp(-\alpha r_1) \exp(-\alpha r_2)	
 \end{equation}
 
-The variational parameter is $\alpha$.
+Here, $r_1$ and $r_2$ are the positions of an up and down electron relative to the nucleus, and the variational parameter is $\alpha$.
 In order to calculate the energy and other useful properties of the wave function, you'll need to implement \verb|value(self,pos)|, \verb|gradient(self,pos)|, and \verb|laplacian(self,pos)| that return $\Psi(\bR,\bP)$, $\nabla \Psi(\bR,\bP)$, and $\nabla^2 \Psi(\bR,\bP)$, respectively. 
 Here, \verb|self| contains the parameters, $\bP$, and \verb|pos| represents an array of the positions of all the samples of both electrons. 
+You'll find details of how this is defined in the skeleton of \verb|slaterwf.py| we've written for you.
 There is a \verb|pass| keyword wherever code is missing that you should implement. 
-Do this before moving on.
+Start by implementing the \verb|value(self,pos)| and \verb|gradient(self,pos)|, then read the next section about testing.
 
 \subsubsection{Testing}
 
-Once you've finished implementing \verb|slaterwf.py|, try running the file with \verb|python slaterwf.py|. 
+Try running the file by executing \verb|python slaterwf.py|. 
 It should print a table with the headers \verb|delta|, \verb|derivative err|, and \verb|laplacian err|. 
 This is produced by the code in the \verb|if __name__=="__main__":| section, which computes the derivatives numerically with finite difference, and compares it to your implementation. 
 The \verb|delta| controls the accuracy of finite difference, and thus the \verb|err| columns should be small ($\sim 10^{-3}$) and grow very small as \verb|delta| shrinks.
 If not, go back and check your code!
+Once all your functions are passing their tests, you can move on to the next section.
 
 \subsection{Hamiltonian object (hamiltonian.py)}
 
@@ -86,6 +88,7 @@ Implement this before continuing.
 
 \subsubsection{Testing}
 
+You can check your code the same way as before.
 This time, we have computed the potential energy for a few configurations by hand. 
 The errors you should see should be around $10^{-9}$.
 Check that your errors are this small before continuing.
@@ -96,7 +99,7 @@ The next step is to draw $\bR$ from the distribution $\Psi^2(\bR)$.
 The Metropolis-Hastings algorithm does this by the following process:
 \begin{enumerate}
 \item Start with an initial configuration $\bR_0$. 	
-\item Propose a new configuration $\bR'=\bR_0 + \sqrt{\tau} \chi$, where $\chi$ is a gaussian random number.
+\item Propose a new configuration $\bR'=\bR_0 + \sqrt{\tau} \chi$, where $\chi$ is a Gaussian random number.
 \item Compute the acceptance probability $a=\frac{\Psi^2(\bR')}{\Psi^2(\bR_0)}$
 \item Generate a uniform random number $u$ between 0 and 1. 
 \item If $u < a$, then set $\bR_1=\bR'$. Otherwise, set $\bR_1=\bR_0$.
@@ -104,14 +107,14 @@ The Metropolis-Hastings algorithm does this by the following process:
 
 The $\tau$ parameter is adjusted to maintain an efficient acceptance ratio. 
 An acceptance ratio between 0.5 and 0.7 is roughly desirable for VMC; for this first implementation, if the acceptance is too high or too low, it's a signal that the samples haven't been able to move too far from their starting point.
-You can play around with $\tau$ too see how it affects acceptance and the accuracy.
+You can play around with $\tau$ to see how it affects acceptance and the accuracy.
 
-Once again the missing parts are currently \verb|pass|, so fill these parts in before moving on. 
+Once again the missing parts are marked by \verb|pass|, so fill these parts in before moving on. 
 Useful python tools are:
 \begin{itemize}
 \item np.random.randn()
 \item np.random.random()
-\item Conditional slices in numpy: \verb|R[:,:,u<a]=Rprime[:,:,u<a]|
+\item Conditional slices in numpy: \verb|R[:,:,u<a] = Rprime[:,:,u<a]|
 \end{itemize}
 
 \subsubsection{Testing}
