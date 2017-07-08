@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 
+##########################################   Path
 class Path:
   def __init__(self,beads,tau,lam,str_rep=False):
     """ constructor for the path class
@@ -34,7 +35,7 @@ class Path:
   @staticmethod
   def draw_beads_3d(ax,beads):
     """ draw all beads in 3D
-    Input:
+    Inputs:
      ax: matplotlib.Axes3D object
      beads: 3D numpy array of shape (nslice,nptcl,ndim)
     Output:
@@ -43,7 +44,7 @@ class Path:
      draw all particles on ax """
 
     nslice,nptcl,ndim = beads.shape
-    com = beads.mean(axis=0) # center of mass of each particle, only used to label the particles
+    com = beads.mean(axis=0) # center of mass of each particle, used to label the particles only
 
     ptcls = []
     for iptcl in range(nptcl):
@@ -74,8 +75,8 @@ class Path:
     # ---- solution ----
     sq_diff = (self.beads[slice1] - self.beads[slice2])**2.
     numerator   = sq_diff.sum() # sum over particles and dimensions
-    demoninator = 4.*self.lam*self.tau
-    tot = numerator/demoninator
+    denominator = 4.*self.lam*self.tau
+    tot = numerator/denominator
     # ---- solution ----
 
     return tot
@@ -96,7 +97,22 @@ class Path:
   def KineticEnergy(self):
     # computes kinetic energy
     KE=0.0
-    return KE/(self.NumTimeSlices+0.0)
+    # ---- solution ----
+    ## thermodynamic estimator
+    #KE = self.ndim*self.nptcl/(2.*self.tau)
+    #for islice in range(self.nslice):
+    #  sq_diff = (self.beads[islice] - self.beads[(islice-1)%self.nslice])**2.
+    #  numerator   = sq_diff.sum() # sum over particles and dimensions
+    #  denominator = 4.*self.lam*self.tau*self.tau**2.
+    #  KE -= numerator/denominator
+    KE = -0.5*self.ndim*np.log(4.*np.pi*self.lam*self.tau)
+    for islice in range(self.nslice):
+      sq_diff = (self.beads[islice] - self.beads[(islice-1)%self.nslice])**2.
+      numerator   = sq_diff.sum() # sum over particles and dimensions
+      denominator = 4.*self.lam*self.tau
+      KE += numerator/denominator
+    # ---- solution ----
+    return float(KE)/self.nslice
   def PotentialEnergy(self):
     # computes potential energy
     PE=0.0
@@ -105,10 +121,11 @@ class Path:
       for iptcl in range(self.nptcl):
         PE += self.Vext(self.beads[islice,iptcl,:])
     # ---- solution ----
-    return PE/(self.NumTimeSlices+0.0)
+    return float(PE)/self.nslice
   def Energy(self):
     return self.PotentialEnergy()+self.KineticEnergy()
 
+##########################################   Test
 def load_test_path(fname='data/TestPath.dat',nslice=5,nptcl=2,ndim=3
  ,tau=0.5,lam=0.5,str_rep=False):
   test_beads = np.loadtxt(fname).reshape(nslice,nptcl,ndim)
@@ -158,6 +175,11 @@ def test_harmonic_potential():
   expect_pot = 0.5*np.dot(test_pos,test_pos)
   assert np.isclose(pot,expect_pot)
 
+def test_kinetic_energy():
+  path = load_test_path()
+  ke = path.KineticEnergy()
+  print(ke)
+
 if __name__ == '__main__':
   print('testing initialization ...')
   test_initialization()
@@ -173,3 +195,6 @@ if __name__ == '__main__':
   print('\ntesting harmonic potential ...')
   test_harmonic_potential()
   print('harmonic potential test passed')
+
+  print('\ntesting kinetic energy ...')
+  test_kinetic_energy()
