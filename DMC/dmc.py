@@ -63,8 +63,7 @@ def simple_dmc(wf,ham,tau,pos,nstep=1000):
     randnums=np.random.random(nconfig)
     new_indices=np.searchsorted(probability,randnums)
     pos[:,:,new_indices]=pos
-    weight[:]=wavg
-#    print(pos)
+    weight.fill(wavg)
     
 
     #Update the reference energy
@@ -90,7 +89,7 @@ if __name__ == '__main__':
   from wavefunction import MultiplyWF, JastrowWF
   from hamiltonian import Hamiltonian
   nconfig=50
-  df=simple_dmc(MultiplyWF(ExponentSlaterWF(2.0),JastrowWF(0.5)),
+  df=simple_dmc(MultiplyWF(ExponentSlaterWF(2.0),JastrowWF(0.3)),
              Hamiltonian(),
              pos=np.random.randn(2,3,nconfig),
              tau=0.01,
