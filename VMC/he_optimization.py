@@ -15,7 +15,6 @@ if __name__=="__main__":
   quantities=['kinetic','electron-nucleus','electron-electron']
   for i in quantities:
     df[i]=[]
-   # df[i+'-err']=[]
   for i in ['alpha','acceptance']:
     df[i]=[]
 

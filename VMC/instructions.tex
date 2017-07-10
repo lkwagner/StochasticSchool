@@ -46,7 +46,7 @@ Looking at the equation for $\langle E \rangle$ above, you'll see that in order 
 	\item A way to compute $\frac{H\Psi(\bR,\bP)}{\Psi(\bR,\bP)}$ (hamiltonian.py)
 	\item A function to generate samples with probability proportional to $|\Psi|^2$ (metropolis.py)
 \end{itemize}
-Each of these files has a test built-in that you can use to check your implementation.
+Each of these files has a test built in that you can use to check your implementation.
 
 \subsection{Wave function object (slaterwf.py)}
 
@@ -57,11 +57,19 @@ For this exercise, we'll assume these orbitals are exponentials.
 \end{equation}
 
 Here, $r_1$ and $r_2$ are the positions of an up and down electron relative to the nucleus, and the variational parameter is $\alpha$.
-In order to calculate the energy and other useful properties of the wave function, you'll need to implement \verb|value(self,pos)|, \verb|gradient(self,pos)|, and \verb|laplacian(self,pos)| that return $\Psi(\bR,\bP)$, $\nabla \Psi(\bR,\bP)$, and $\nabla^2 \Psi(\bR,\bP)$, respectively. 
+In order to calculate the energy and other useful properties of the wave function, you'll need to implement \verb|value(self,pos)|, \verb|gradient(self,pos)|, and \verb|laplacian(self,pos)| that return $\Psi(\bR,\bP)$, $\nabla \Psi(\bR,\bP)/\Psi(\bR,\bP)$, and $\nabla^2 \Psi(\bR,\bP)/\Psi(\bR,\bP)$, respectively. 
 Here, \verb|self| contains the parameters, $\bP$, and \verb|pos| represents an array of the positions of all the samples of both electrons. 
 You'll find details of how this is defined in the skeleton of \verb|slaterwf.py| we've written for you.
 There is a \verb|pass| keyword wherever code is missing that you should implement. 
 Start by implementing the \verb|value(self,pos)| and \verb|gradient(self,pos)|, then read the next section about testing.
+
+Useful python tools:
+\begin{itemize}
+  \item
+    \verb|np.sum(array,axis=i)| will sum over the \verb|i|-th index.
+  \item
+    \verb|array3d + array2d[np.newaxis,:,:]| duplicates the values of \verb|array2d| over the indices of the first axis to make the sum valid.
+\end{itemize}
 
 \subsubsection{Testing}
 
@@ -112,8 +120,8 @@ You can play around with $\tau$ to see how it affects acceptance and the accurac
 Once again the missing parts are marked by \verb|pass|, so fill these parts in before moving on. 
 Useful python tools are:
 \begin{itemize}
-\item np.random.randn()
-\item np.random.random()
+\item \verb|np.random.randn()|
+\item \verb|np.random.random()|
 \item Conditional slices in numpy: \verb|R[:,:,u<a] = Rprime[:,:,u<a]|
 \end{itemize}
 
