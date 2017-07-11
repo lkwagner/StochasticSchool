@@ -9,25 +9,6 @@ sns.set_style('ticks')
 #  Error. Usage: python plot_csv.py sample.csv.
 #  """
 
-def plot_param(avgdf):
-  fig,axes=plt.subplots(2,2,sharex='col')
-
-  for axis,param,sel in zip(
-      axes.T,
-      ['alpha','beta'],
-      [avgdf['beta']==0.0,avgdf['alpha']==2.0]):
-    df=avgdf[sel]
-    for ax,prop,color in zip(axis,['nonint','total'],['b','r']):
-      ax.errorbar(df[param],df[prop],df['%s_err'%prop],color=color,
-        capthick=1,capsize=2)
-      ax.plot(df[param],df[prop],color=color)
-      ax.set_ylabel('Total Energy (Ha)')
-    axis[-1].set_xlabel(r'$\%s$'%param)
-
-  fig.set_size_inches(8,6)
-  fig.tight_layout()
-  fig.savefig('energy.pdf')
-
 def average_configs(df):
   res=pd.Series({
       'electron-electron':df['electron-electron'].mean(),
@@ -43,14 +24,58 @@ def average_configs(df):
     })
   return res
 
+def plot_optimization():
+  ''' Plot out the optimizations for each of the wave functions and Hamiltonians.'''
 
-# Read and average over configurations.
-#inpfn=sys.argv[1]
-inpfn="helium.csv"
-csvdf=pd.read_csv(open(inpfn,'r'))
-csvdf['total'] = csvdf['electron-electron']+csvdf['electron-nucleus']+csvdf['kinetic']
-csvdf['nonint'] = csvdf['electron-nucleus']+csvdf['kinetic']
-avgdf=csvdf.groupby(['alpha','beta','acceptance']).apply(average_configs).reset_index()
+  # Take appropriate averages.
+  inpfn="helium.csv"
+  csvdf=pd.read_csv(open(inpfn,'r'))
+  csvdf['total'] = csvdf['electron-electron']+csvdf['electron-nucleus']+csvdf['kinetic']
+  csvdf['nonint'] = csvdf['electron-nucleus']+csvdf['kinetic']
+  avgdf=csvdf.groupby(['alpha','beta','acceptance']).apply(average_configs).reset_index()
 
-plot_param(avgdf)
+  # Make plots.
+  fig,axes=plt.subplots(2,2,sharex='col')
 
+  for axis,param,sel in zip(
+      axes.T,
+      ['alpha','beta'],
+      [avgdf['beta']==0.0,avgdf['alpha']==2.0]):
+    df=avgdf[sel]
+    for ax,prop,color in zip(axis,['nonint','total'],['b','r']):
+      ax.errorbar(df[param],df[prop],df['%s_err'%prop],color=color,
+        capthick=1,capsize=2)
+      ax.plot(df[param],df[prop],color=color)
+      ax.set_ylabel('%s energy (Ha)'%prop)
+    axis[-1].set_xlabel(r'$\%s$'%param)
+
+  fig.set_size_inches(8,6)
+  fig.tight_layout()
+  fig.savefig('energy.pdf')
+
+def plot_singularity():
+  ''' Demonstrate how you can satisfy cusp conditions.'''
+
+  csvdf=pd.read_csv(open('singularity.csv','r'))
+  csvdf['total']=csvdf['kinetic']+csvdf['electron-electron']+csvdf['electron-nucleus']
+  fig,axes=plt.subplots(3,1,sharex=True)
+  for ax,wf in zip(axes,('slater unopt.','slater opt.','slater-jastrow')):
+    pltdf=csvdf[csvdf['wf']==wf]
+
+    ax.plot(pltdf['pos'],pltdf['kinetic'],'r',label='kinetic')
+    ax.plot(pltdf['pos'],pltdf['electron-electron'],'b',label='e-e')
+    ax.plot(pltdf['pos'],pltdf['electron-nucleus'],'g',label='e-n')
+    ax.plot(pltdf['pos'],pltdf['total'],'k',label='total')
+    ax.set_xlim((-0.6,1.6))
+    ax.set_ylim((-100,100))
+    ax.set_ylabel('Energy (Ha)')
+    ax.set_title(wf)
+    ax.legend(loc='best')
+
+  axes[-1].set_xlabel('x (Angstroms)')
+  fig.set_size_inches(4,9)
+  fig.tight_layout()
+  fig.savefig('slater_singularity.pdf')
+
+plot_optimization()
+#plot_singularity()
