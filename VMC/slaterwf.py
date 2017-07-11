@@ -35,8 +35,9 @@ if __name__=="__main__":
   # This part of the code will test your implementation. 
   # Don't modify it!
   import wavefunction
+  # 2 electrons, 3 dimensions, 5 configurations.
   testpos=np.random.randn(2,3,5)
   print("Exponent wavefunction")
   ewf=ExponentSlaterWF(0.5)
-  wavefunction.test_wavefunction(ExponentSlaterWF(0.5))
+  wavefunction.test_wavefunction(ExponentSlaterWF(alpha=0.5))
   
