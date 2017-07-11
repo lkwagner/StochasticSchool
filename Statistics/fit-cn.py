@@ -4,10 +4,6 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 
 df = pd.read_csv("cn-energies.csv")
-rvals = df['r'].values
-evals = df['en'].values
-errvals = df['err'].values
-
 
 massa=12.011
 massb=14.007
@@ -31,7 +27,7 @@ def omega(aa,bb,m):
 # need to use good guesses for the parameters
 p0=(0.445,1.1,-15.1,2.2)
 
-popt, pcov = curve_fit(morse,rvals,evals,p0,errvals)
+popt, pcov = curve_fit(morse,df.r,df.en,p0,df.err)
 
 a=popt[0]
 b=popt[1]
@@ -40,8 +36,8 @@ d=popt[3]
 
 
 #plot the fit
-#plt.errorbar(rvals,evals,yerr=errvals)
-#plt.plot(rvals,morse(rvals,*popt), 'g--', label='fit-with-bounds')
+#plt.errorbar(df.r,df.en,yerr=df.err)
+#plt.plot(rvals,morse(df.r,*popt), 'g--', label='fit-with-bounds')
 #plt.show()
 
 print("equilibrium distance = ", d*bohrtoang, "angstroms")
