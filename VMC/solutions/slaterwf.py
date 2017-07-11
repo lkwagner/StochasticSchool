@@ -23,7 +23,7 @@ class ExponentSlaterWF:
     dist=np.sqrt(np.sum(pos**2,axis=1))
     pos_over_dist=pos/dist[:,np.newaxis,:]
     return np.sum(self.alpha**2 * pos_over_dist**2 
-        -self.alpha * (pos_over_dist - pos_over_dist**3)/pos, 
+        -self.alpha * (1 - pos_over_dist**2)/dist[:,np.newaxis,:], 
         axis=1)
 #-------------------------
 
