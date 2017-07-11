@@ -11,9 +11,9 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
   """
 
   # initialize
-  posnew = pos.copy()
-  posold = pos.copy()
-  wfold  = wf.value(posold)
+  posnew = pos.copy() # proposed positions
+  poscur = pos.copy() # current positions
+  wfold  = wf.value(poscur)
   acceptance=0.0
   nconf=pos.shape[2]
   # This loop performs the metropolis move many times to attempt to decorrelate the samples.
@@ -30,7 +30,7 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
     # update stale stored values for accepted configurations
     pass
 
-  return posold,acceptance
+  return poscur,acceptance
 
 
 ##########################################   Test

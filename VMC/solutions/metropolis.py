@@ -12,14 +12,15 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
 
   # initialize
   posnew = pos.copy()
-  posold = pos.copy()
-  wfold  = wf.value(posold)
+  poscur = pos.copy()
+  wfold  = wf.value(poscur)
   acceptance=0.0
   nconf=pos.shape[2]
+  # This loop performs the metropolis move many times to attempt to decorrelate the samples.
   for istep in range(nstep):
     # propose a move
-    gauss_move_old = np.random.randn(*posold.shape)
-    posnew=posold+np.sqrt(tau)*gauss_move_old
+    gauss_move_old = np.random.randn(*poscur.shape)
+    posnew=poscur+np.sqrt(tau)*gauss_move_old
 
     wfnew=wf.value(posnew)
 
@@ -30,11 +31,11 @@ def metropolis_sample(pos,wf,tau=0.01,nstep=1000):
     acc_idx = (prob + np.random.random_sample(nconf) > 1.0)
 
     # update stale stored values for accepted configurations
-    posold[:,:,acc_idx] = posnew[:,:,acc_idx]
+    poscur[:,:,acc_idx] = posnew[:,:,acc_idx]
     wfold[acc_idx] = wfnew[acc_idx]
     acceptance += np.mean(acc_idx)/nstep
 
-  return posold,acceptance
+  return poscur,acceptance
 
 
 ##########################################   Test
