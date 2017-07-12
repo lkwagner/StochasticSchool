@@ -205,23 +205,32 @@ Once you write the code to compute this (no skeleton needed for this one!), use 
     This should explain why optimized uncorrelated wave functions tend to over-localize; can you use these results to understand this? How does this relate to $\alpha$ changing after we appended the Jastrow?
 \end{itemize}
 
-\section{Improving the sampling: biased moves} 
+\section{Improving the sampling: biased moves (advanced)} 
 
 The metropolis algorithm has an arbitrary transition probability in it. 
-So long as you choose the acceptance probability to satisfy detailed balance, the algorithm will still sample the correct distribution.
+So long as you choose the acceptance probability to satisfy detailed balance, the algorithm will still sample the correct distribution (see Wikipedia or ask me for detailed explanation).
 Our current set-up assumes a Gaussian transition probability, which is not the most efficient choice.
 
 Because the acceptance is higher for transitioning to $\bR$ where $|\Psi(\bR,\bP)|^2$ is larger, it makes sense to bias the transition towards the direction that $\Psi(\bR,\bP)$ is growing.
-With this in mind, suppose the transition probability is 
-XXX
-This is known as the ``force bias.''
+The new proposed move will be
+\begin{equation}
+  \bR'=\bR_0 + \sqrt{\tau} \chi + \tau \nabla \Psi(\bR,\bP)
+\end{equation}
+where $\chi$ is still a Gaussian random number.
+The acceptance probability will now be 
+\begin{equation}
+  a=\frac{\Psi^2(\bR')}{\Psi^2(\bR_0)}
+  \frac{T(\bR' \to \bR)}{T(\bR \to \bR')}
+\end{equation}
+$T(\bR \to \bR')$ represents the probability of your transition move choosing to move from $\bR$ to $\bR'$, and $T(\bR' \to \bR)$ is the probability of the reverse move.
+For the simple moves these two are the same, but for biased moves they differ.
 
 Now implement the new sampling function:
 \begin{itemize}
   \item
     What should the acceptance probability be in order to maintain detailed balance?
   \item
-    The file \verb|metropolis_drift.py| contains the skeleton for this approach, and as before, go ahead and fill in the \verb|pass| section. Check that the test succeeds.
+    The file \verb|metropolis_drift.py| contains the skeleton for this approach, and as before, go ahead and fill in the \verb|pass| sections. Check that the test succeeds.
   \item
     Compare the acceptance probabilities for the metropolis and biased metropolis methods. 
     Do they produce the same energies (or other expectation values)? 
