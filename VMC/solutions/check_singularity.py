@@ -4,6 +4,9 @@ from slaterwf import ExponentSlaterWF
 from hamiltonian import Hamiltonian
 import pandas as pd
 
+# This can check the effects of setting the correct cusp condition, but we won't
+# have time for this today.
+
 def check_singularity(wf,ham):
   ''' Check what happens to the energies when the two electrons in a wave
   function are positioned very close.'''
@@ -54,6 +57,3 @@ if __name__=='__main__':
   resdf=check_wfs()
   with open('singularity.csv','w') as outf:
     resdf.to_csv(outf)
-
-
-
