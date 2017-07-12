@@ -184,7 +184,7 @@ The functional form of this simple Jastrow factor is
 
 Optimize $\alpha$ and $\beta$ with this new Jastrow, using the skeleton in \verb|he_optimization.py|.
 What happens to the optimal value of $\alpha$? Why? 
-If you get stuck on this question, the next section might give a clue.
+If you get stuck on the ``why'', the next section might give a clue.
 
 \section{Computing other expectation values}
 
@@ -194,14 +194,15 @@ Just replace the $\hat{H}$ with $\hat{O}$ where $\hat{O}$ is an operator that me
 One particularly simple $\hat O$ is the operator measuring the pair distribution function of the electrons. 
 This operator is diagonal in the position basis: for each configuration, simply measure the distances between the electrons.
 In the special case of two electrons, the distribution is really just one number: the distance between the two electrons.
-We can use this to analyze the differences between our wave functions:
+
+Once you write the code to compute this (no skeleton needed for this one!), use this to analyze the differences between our wave functions:
 \begin{itemize}
   \item
     Compare the Slater wave function to the Slater-Jastrow wave function with the same $\alpha$. 
     Which of the two has a greater average distance between electrons?
   \item
     Compare the optimized Slater wave function to the optimized Slater-Jastrow wave function. 
-    This should explain why optimized uncorrelated wave functions tend to over-localized; can you use these results to explain this?
+    This should explain why optimized uncorrelated wave functions tend to over-localize; can you use these results to understand this? How does this relate to $\alpha$ changing after we appended the Jastrow?
 \end{itemize}
 
 \section{Improving the sampling: biased moves} 
@@ -248,5 +249,6 @@ It's been a few hours, so let's summarize what we've done this session:
     Used this to explore the differences between correlated and uncorrelated wave functions.
 \end{enumerate}
 The first four points will be useful for other QMC algorithms, so if you had trouble with these that didn't get worked out, try to fix them before the next session.
+If you are really stuck, come find me and I'll see what I can do.
 
 \end{document}
