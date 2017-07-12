@@ -6,6 +6,8 @@
 \newcommand{\bP}{{\bf P}}
 \begin{document}
 
+Last update: \today
+
 \section{Overview} 
 
 You will implement variational Monte Carlo (VMC) for the He atom. 
@@ -23,19 +25,19 @@ The algorithm works by sampling the integral:
   =
   \lim_{M\to \infty}
   \frac{1}{M}
-  \sum_{R_i}
+  \sum_{\bR_i}
   \frac{\hat{H} \Psi(\bR_i,\bP)}{\Psi(\bR_i,\bP)}
 \end{equation}
 where the samples of electron positions, $\{\bR_i\}_{i=1}^M$, are sampled with probability $|\Psi(\bR_i,\bP)|^2$.
 Here, $\bP$ are the variational parameters.
 Once you can compute $\langle E \rangle$, you can simply explore the values of $\bP$ to find the lowest energy.
-For the He atom, you'll find that this can get quite close to the exact ground state energy.
+For the He atom, you'll find that a simple guess for the wave function can get quite close to the exact ground state energy.
 
 \subsection{Learning objectives}
 \begin{itemize}
 \item How to compute wave functions and expectation value.
 \item How to sample many-body wave functions using the Metropolis algorithm.
-\item The interplay between interactions and correlations. 
+\item The interplay between interactions in the Hamiltonian and correlations in the wave function. 
 \end{itemize}
 
 \section{Implementing the pieces}
@@ -53,12 +55,18 @@ Each of these files has a test built in that you can use to check your implement
 A good starting point for a trial wavefunction is a Slater determinant, but because there's only one electron of each spin, it's just a product of single particle orbitals. 
 For this exercise, we'll assume these orbitals are exponentials.
 \begin{equation}
-\Psi(\bR)=\exp(-\alpha r_1) \exp(-\alpha r_2)	
+  \Psi(\bR,\bP)
+  =
+  \Psi((r_1,r_2),\alpha)
+  =
+  \exp(-\alpha r_1) \exp(-\alpha r_2)	
 \end{equation}
 
 Here, $r_1$ and $r_2$ are the positions of an up and down electron relative to the nucleus, and the variational parameter is $\alpha$.
 In order to calculate the energy and other useful properties of the wave function, you'll need to implement \verb|value(self,pos)|, \verb|gradient(self,pos)|, and \verb|laplacian(self,pos)| that return $\Psi(\bR,\bP)$, $\nabla \Psi(\bR,\bP)/\Psi(\bR,\bP)$, and $\nabla^2 \Psi(\bR,\bP)/\Psi(\bR,\bP)$, respectively. 
 Here, \verb|self| contains the parameters, $\bP$, and \verb|pos| represents an array of the positions of all the samples of both electrons. 
+Luckily, since we know the form of the wave function, we can compute these derivatives analytically, and avoid finite-difference error.
+
 You'll find details of how this is defined in the skeleton of \verb|slaterwf.py| we've written for you.
 There is a \verb|pass| keyword wherever code is missing that you should implement. 
 Start by implementing the \verb|value(self,pos)| and \verb|gradient(self,pos)|, then read the next section about testing.
@@ -103,7 +111,7 @@ Check that your errors are this small before continuing.
 
 \subsection{Metropolis algorithm (metropolis.py)}
 
-The next step is to draw $\bR$ from the distribution $\Psi^2(\bR)$. 
+The next step is to draw $\bR$ from the distribution $|\Psi(\bR)|^2$. 
 The Metropolis-Hastings algorithm does this by the following process:
 \begin{enumerate}
 \item Start with an initial configuration $\bR_0$. 	
@@ -114,7 +122,7 @@ The Metropolis-Hastings algorithm does this by the following process:
 \end{enumerate}
 
 The $\tau$ parameter is adjusted to maintain an efficient acceptance ratio. 
-An acceptance ratio between 0.5 and 0.7 is roughly desirable for VMC; for this first implementation, if the acceptance is too high or too low, it's a signal that the samples haven't been able to move too far from their starting point.
+An acceptance ratio between 0.3 and 0.7 is roughly desirable for VMC; for this first implementation, if the acceptance is too high or too low, it's a signal that the samples haven't been able to move too far from their starting point.
 You can play around with $\tau$ to see how it affects acceptance and the accuracy.
 
 Once again the missing parts are marked by \verb|pass|, so fill these parts in before moving on. 
@@ -138,10 +146,10 @@ What happens when you change \verb|alpha| in that case?
 
 \section{Optimizing one parameter}
 
-At this point we have a system that can evaluate properties of a wave function.
+At this point we have a code that can evaluate the energy of a wave function.
 Now using your code, you can explore the following:
 \begin{itemize}
-\item Where is the minimum energy if we don't include electron-electron interaction? Notice anything about the errors at that point?
+\item For what $\alpha$ is the energy minimized if we don't include electron-electron interaction? Notice anything about the errors at that point?
   If you understood the tests in the last section, you should know what to expect, but try using your code to see how it manifests.
 \item What happens to the minimum when interactions are included? Errors?
 \item What is the behavior of the kinetic and potential energies as a function of $\alpha$? Do they make sense?	
@@ -151,13 +159,19 @@ Some code to guide your investigation is provided in \verb|he_optimization.py|.
 Once again, fill in the \verb|pass| sections.
 It's usually good practice to produce data, write it to disk, then load and plot it separately. 
 
-\section{Add a Jastrow factor: optimizing two parameters} 
+\subsection{Testing}
 
-In the last section, you should have noticed that we no longer have an eigenstate with our simple Slater wave function when interactions are turned on.
+Now it's your turn to write a test! 
+Can you think of a good way to check this code?
+Think about what cases you know the answer already.
+
+\section{Append a Jastrow factor} 
+
+In the previous section, you should have noticed that we no longer have an eigenstate with our simple Slater wave function when interactions are turned on.
 This is because it is a product state with no correlations. 
 Now you'll put correlation into the wave function using a Jastrow factor.
 
-We have implemented a Jastrow wave function and an object MultiplyWF which can construct a Slater-Jastrow wave function.
+We have implemented a Jastrow wave function and an object \verb|MultiplyWF| which can construct a Slater-Jastrow wave function.
 These objects are analogous to the \verb|SlaterWF| object, and can be used everywhere you used the \verb|SlaterWF| object before.
 You can construct it by doing
 \begin{verbatim}
@@ -168,33 +182,71 @@ The functional form of this simple Jastrow factor is
 \Psi_J(\bR) = \exp(\beta r_{12})	
 \end{equation}
 
-Optimize $\alpha$ and $\beta$ with this new Jastrow. What happens to the optimal value? Why? 
-Can you guess what the optimal values of $\alpha$ and $\beta$ should be? 
-\textit{Hint}: Remember that singularities in the potential energy should be cancelled by singularities in the kinetic energy. 
+Optimize $\alpha$ and $\beta$ with this new Jastrow, using the skeleton in \verb|he_optimization.py|.
+What happens to the optimal value of $\alpha$? Why? 
+If you get stuck on this question, the next section might give a clue.
 
-\section{Computing expectation values}
+\section{Computing other expectation values}
 
+So far we've computed the expectation of the energy, $\langle E \rangle$, but using this same technique we can evaluate any operator.
+Just replace the $\hat{H}$ with $\hat{O}$ where $\hat{O}$ is an operator that measures the observable.
+
+One particularly simple $\hat O$ is the operator measuring the pair distribution function of the electrons. 
+This operator is diagonal in the position basis: for each configuration, simply measure the distances between the electrons.
+In the special case of two electrons, the distribution is really just one number: the distance between the two electrons.
+We can use this to analyze the differences between our wave functions:
 \begin{itemize}
-\item Radial distribution function	
-\item Kinetic and potential energies. 
+  \item
+    Compare the Slater wave function to the Slater-Jastrow wave function with the same $\alpha$. 
+    Which of the two has a greater average distance between electrons?
+  \item
+    Compare the optimized Slater wave function to the optimized Slater-Jastrow wave function. 
+    This should explain why optimized uncorrelated wave functions tend to over-localized; can you use these results to explain this?
 \end{itemize}
-
-What happens to the average distance between electrons with the Jastrow factor? 
-
-How does the Jastrow factor affect 
-
-\section{The linear method for optimization} 
-
-\begin{itemize}
-\item Expectation values we need
-\item Testing 
-\end{itemize}
-
-\subsection{Programming parameter derivatives}
-
 
 \section{Improving the sampling: biased moves} 
 
-\section{Excited states: triplet. } 
+The metropolis algorithm has an arbitrary transition probability in it. 
+So long as you choose the acceptance probability to satisfy detailed balance, the algorithm will still sample the correct distribution.
+Our current set-up assumes a Gaussian transition probability, which is not the most efficient choice.
+
+Because the acceptance is higher for transitioning to $\bR$ where $|\Psi(\bR,\bP)|^2$ is larger, it makes sense to bias the transition towards the direction that $\Psi(\bR,\bP)$ is growing.
+With this in mind, suppose the transition probability is 
+XXX
+This is known as the ``force bias.''
+
+Now implement the new sampling function:
+\begin{itemize}
+  \item
+    What should the acceptance probability be in order to maintain detailed balance?
+  \item
+    The file \verb|metropolis_drift.py| contains the skeleton for this approach, and as before, go ahead and fill in the \verb|pass| section. Check that the test succeeds.
+  \item
+    Compare the acceptance probabilities for the metropolis and biased metropolis methods. 
+    Do they produce the same energies (or other expectation values)? 
+    How do their acceptance probabilities compare?
+\end{itemize}
+
+Higher acceptance probabilities means we need to spend fewer steps to decorrelate the wave function.
+
+\section{Wrap up}
+
+It's been a few hours, so let's summarize what we've done this session:
+\begin{enumerate}
+  \item
+    Implemented several wave function objects that can also evaluate gradients and Laplacians of themselves.
+  \item
+    Evaluate a He Hamiltonian with these objects.
+  \item
+    Implemented a Metropolis sampling algorithm (or two, if you finished the discussion).
+  \item
+    Compute expectation values using Monte Carlo.
+  \item
+    Used the expectations to brute-force optimize the parameters of the trial wave function. 
+    This is a primitive VMC code.
+  \item
+    Used this to explore the differences between correlated and uncorrelated wave functions.
+\end{enumerate}
+The first four points will be useful for other QMC algorithms, so if you had trouble with these that didn't get worked out, try to fix them before the next session.
 
 \end{document}
