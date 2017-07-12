@@ -34,6 +34,9 @@ def plot_optimization():
   csvdf['nonint'] = csvdf['electron-nucleus']+csvdf['kinetic']
   avgdf=csvdf.groupby(['alpha','beta','acceptance']).apply(average_configs).reset_index()
 
+  print("Best parameters")
+  print(avgdf[avgdf['total']==avgdf['total'].min()])
+
   # Make plots.
   fig,axes=plt.subplots(2,2,sharex='col')
 
