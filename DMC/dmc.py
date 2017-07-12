@@ -26,6 +26,22 @@ def ke_pot_tot_energies(pos,wf,ham):
 
 #####################################
 
+
+def acceptance(posold,posnew,driftold,driftnew,tau,wf):
+    """Input:
+      poscur: electron positions before move (nelec,ndim,nconf) 
+      posnew: electron positions after  move (nelec,ndim,nconf)
+      driftnew: drift vector at posnew 
+      tau: time step
+      wf: wave function object
+    Return:
+      ratio: [backward move prob.]/[forward move prob.]
+      """
+    gfratio=np.exp(-np.sum( (posold-posnew-driftnew)**2/(2*tau),axis=(0,1)) 
+                   +np.sum( (posnew-posold-driftold)**2/(2*tau),axis=(0,1)) )
+    ratio=wf.value(posnew)**2/wf.value(posold)**2
+    return ratio*gfratio
+
 def simple_dmc(wf,ham,tau,pos,nstep=1000):
   """
   Inputs:
@@ -35,13 +51,11 @@ def simple_dmc(wf,ham,tau,pos,nstep=1000):
 
   """
   df={'step':[],
-      'config':[],
       'elocal':[],
       'weight':[],
-      'eref':[],
-      'r1':[],
-      'r2':[],
-      'r12':[]
+      'weightvar':[],
+      'elocalvar':[],
+      'eref':[],'tau':[]
       }
   nconfig=pos.shape[2]
   pos,acc=metropolis_sample(pos,wf,tau=0.5)
@@ -51,10 +65,19 @@ def simple_dmc(wf,ham,tau,pos,nstep=1000):
   
   for istep in range(nstep):
     #Drift+diffusion
-    pos+=np.sqrt(tau)*np.random.randn(*pos.shape)+tau*wf.gradient(pos)
+    driftold=tau*wf.gradient(pos)
+    ke,pot,elocold=ke_pot_tot_energies(pos,wf,ham)
+    
+    posnew=pos+np.sqrt(tau)*np.random.randn(*pos.shape)+driftold
+    driftnew=tau*wf.gradient(pos)
+    acc=acceptance(pos,posnew,driftold,driftnew,tau,wf)
+    imove=acc>np.random.random(nconfig)
+    pos[:,:,imove]=posnew[:,:,imove]
+    acc_ratio=np.sum(imove)/nconfig
+    
     #Change weight
     ke,pot,eloc=ke_pot_tot_energies(pos,wf,ham)
-    weight*=np.exp(-tau*(eloc-eref))
+    weight*=np.exp(-0.5*tau*(eloc+elocold-2*eref))
     
     #Branch
     wtot=np.sum(weight)
@@ -62,22 +85,23 @@ def simple_dmc(wf,ham,tau,pos,nstep=1000):
     probability=np.cumsum(weight/wtot)
     randnums=np.random.random(nconfig)
     new_indices=np.searchsorted(probability,randnums)
-    pos[:,:,new_indices]=pos
-    weight.fill(wavg)
+    posnew=pos[:,:,new_indices]
+    pos=posnew.copy()
     
 
     #Update the reference energy
     eref=eref-np.log(wavg)
 
-    for i in range(nconfig):
-      df['step'].append(istep)
-      df['config'].append(i)
-      df['elocal'].append(eloc[i])
-      df['weight'].append(weight[i])
-      df['eref'].append(eref)
-      df['r1'].append(np.sum(pos[0,:,i]**2))
-      df['r2'].append(np.sum(pos[1,:,i]**2))
-      df['r12'].append(np.sum((pos[1,:,i]-pos[0,:,i])**2))
+    print("average energy",np.mean(eloc),"eref",eref,acc_ratio)
+    df['step'].append(istep)
+    df['elocal'].append(np.mean(eloc))
+    df['weight'].append(np.mean(weight))
+    df['elocalvar'].append(np.std(eloc))
+    df['weightvar'].append(np.std(weight))
+    df['eref'].append(eref)
+    df['tau'].append(tau)
+    weight.fill(wavg)
+    
       
   return pd.DataFrame(df)
 
@@ -88,12 +112,15 @@ if __name__ == '__main__':
   from slaterwf import ExponentSlaterWF
   from wavefunction import MultiplyWF, JastrowWF
   from hamiltonian import Hamiltonian
-  nconfig=50
-  df=simple_dmc(MultiplyWF(ExponentSlaterWF(2.0),JastrowWF(0.3)),
+  nconfig=50000
+  dfs=[]
+  for tau in [.001,.005,.01,.02]:
+    dfs.append(simple_dmc(MultiplyWF(ExponentSlaterWF(2.0),JastrowWF(0.5)),
              Hamiltonian(),
              pos=np.random.randn(2,3,nconfig),
-             tau=0.01,
-             nstep=50000
-             )
+             tau=tau,
+             nstep=10000
+             ))
+  df=pd.concat(dfs)
   df.to_csv("dmc.csv",index=False)
 
