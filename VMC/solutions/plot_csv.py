@@ -33,8 +33,12 @@ def plot_optimization():
   csvdf['total'] = csvdf['electron-electron']+csvdf['electron-nucleus']+csvdf['kinetic']
   csvdf['nonint'] = csvdf['electron-nucleus']+csvdf['kinetic']
   avgdf=csvdf.groupby(['alpha','beta','acceptance']).apply(average_configs).reset_index()
+  sltdf=avgdf[avgdf['beta']==0.0]
 
   print("Best parameters")
+  print("Slater")
+  print(sltdf[sltdf['total']==sltdf['total'].min()])
+  print("Slater-Jastrow")
   print(avgdf[avgdf['total']==avgdf['total'].min()])
 
   # Make plots.
