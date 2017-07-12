@@ -47,7 +47,9 @@ def plot_optimization():
         capthick=1,capsize=2)
       ax.plot(df[param],df[prop],color=color)
       ax.set_ylabel('%s energy (Ha)'%prop)
-    axis[-1].set_xlabel(r'$\%s$'%param)
+    axis[-1].set_xlabel(param)
+  axes[0,0].set_title('Slater (beta=0)')
+  axes[0,1].set_title('Slater-Jastrow (fixing alpha=2.0)')
 
   fig.set_size_inches(8,6)
   fig.tight_layout()
