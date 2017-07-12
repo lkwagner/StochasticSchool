@@ -21,7 +21,6 @@ class ExponentSlaterWF:
 #-------------------------
   def laplacian(self,pos):
     dist=np.sqrt(np.sum(pos**2,axis=1))
-    pos_over_dist=pos/dist[:,np.newaxis,:]
     return -2*self.alpha/dist + self.alpha**2
 #-------------------------
 
