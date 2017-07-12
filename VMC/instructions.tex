@@ -151,7 +151,9 @@ Now using your code, you can explore the following:
 \begin{itemize}
 \item For what $\alpha$ is the energy minimized if we don't include electron-electron interaction? Notice anything about the errors at that point?
   If you understood the tests in the last section, you should know what to expect, but try using your code to see how it manifests.
+    What should the ground state energy be in this case?
 \item What happens to the minimum when interactions are included? Errors?
+  The exact ground state energy is 2.901 Ha. How close are you?
 \item What is the behavior of the kinetic and potential energies as a function of $\alpha$? Do they make sense?	
 \end{itemize}
 
@@ -183,6 +185,8 @@ The functional form of this simple Jastrow factor is
 \end{equation}
 
 Optimize $\alpha$ and $\beta$ with this new Jastrow, using the skeleton in \verb|he_optimization.py|.
+How much closer are you to the ground state energy (2.901 Ha)?
+How have the errors changed?
 What happens to the optimal value of $\alpha$? Why? 
 If you get stuck on the ``why'', the next section might give a clue.
 
