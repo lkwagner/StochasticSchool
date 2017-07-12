@@ -214,15 +214,15 @@ Our current set-up assumes a Gaussian transition probability, which is not the m
 Because the acceptance is higher for transitioning to $\bR$ where $|\Psi(\bR,\bP)|^2$ is larger, it makes sense to bias the transition towards the direction that $\Psi(\bR,\bP)$ is growing.
 The new proposed move will be
 \begin{equation}
-  \bR'=\bR_0 + \sqrt{\tau} \chi + \tau \nabla \Psi(\bR,\bP)
+  \bR'=\bR_0 + \sqrt{\tau} \chi + \tau \nabla \Psi(\bR_0,\bP)
 \end{equation}
 where $\chi$ is still a Gaussian random number.
 The acceptance probability will now be 
 \begin{equation}
   a=\frac{\Psi^2(\bR')}{\Psi^2(\bR_0)}
-  \frac{T(\bR' \to \bR)}{T(\bR \to \bR')}
+  \frac{T(\bR' \to \bR_0)}{T(\bR_0 \to \bR')}
 \end{equation}
-$T(\bR \to \bR')$ represents the probability of your transition move choosing to move from $\bR$ to $\bR'$, and $T(\bR' \to \bR)$ is the probability of the reverse move.
+$T(\bR_0 \to \bR')$ represents the probability of your transition move choosing to move from $\bR$ to $\bR'$, and $T(\bR' \to \bR_0)$ is the probability of the reverse move.
 For the simple moves these two are the same, but for biased moves they differ.
 
 Now implement the new sampling function:

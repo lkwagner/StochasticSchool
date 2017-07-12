@@ -88,3 +88,37 @@ def metropolis_sample_biased(pos,wf,tau=0.01,nstep=1000):
 
   return poscur,acceptance
 
+def test_metropolis(
+      nconfig=1000,
+      ndim=3,
+      nelec=2,
+      nstep=100,
+      tau=0.5
+    ):
+  from slaterwf import ExponentSlaterWF
+  from hamiltonian import Hamiltonian
+  
+  wf=ExponentSlaterWF(alpha=1.0)
+  ham=Hamiltonian(Z=1)
+  
+  possample     = np.random.randn(nelec,ndim,nconfig)
+  possample,acc = metropolis_sample_biased(possample,wf,tau=tau,nstep=nstep)
+
+  # calculate kinetic energy
+  ke   = -0.5*np.sum(wf.laplacian(possample),axis=0)
+  # calculate potential energy
+  vion = ham.pot_en(possample)
+  eloc = ke+vion
+  
+  # report
+  print( "Cycle finished; acceptance = {acc:3.2f}.".format(acc=acc) )
+  for nm,quant,ref in zip(['kinetic','Electron-nucleus','total']
+                         ,[ ke,       vion,              eloc]
+                         ,[ 1.0,      -2.0,              -1.0]):
+    avg=np.mean(quant)
+    err=np.std(quant)/np.sqrt(nconfig)
+    print( "{name:20s} = {avg:10.6f} +- {err:8.6f}; reference = {ref:5.2f}".format(
+      name=nm, avg=avg, err=err, ref=ref) )
+
+if __name__=="__main__":
+  test_metropolis()
