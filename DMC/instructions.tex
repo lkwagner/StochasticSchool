@@ -10,12 +10,12 @@
 We're going to write a series of implementations of diffusion Monte Carlo.
 Each implementation will generate data in the following form: 
 
-\begin{tabular}{ccccc}
-tau&step&config number&	local energy&weight\\
+\begin{tabular}{ccccccc}
+tau&step&local energy average&weight&local energy variance &weight variance&reference energy\\
 \hline
 \end{tabular}
 
-
+We will do our initial testing for $\tau\simeq 1$ and using $\alpha=2,\beta=0.5$ in the Slater-Jastrow wave function.
 	
 \section{Importance sampling} 
 
@@ -24,13 +24,13 @@ For 1000 walkers, generate dynamics as follows:
 x_{n+1} = x_n + \sqrt{\tau}\chi + \tau \frac{\nabla \Psi_T(x_n)}{\Psi_T(x_n)},
 \end{equation}
 where $\chi$ is a random variable. 
+You can add an acceptance/rejection step to this just like in VMC, although the reasoning is quite different.
 Set all weights to one.
 Make a CSV file and use Pandas to analyze your data. 
 
 
 \begin{itemize}
-\item What is the limiting behavior as $\tau$ goes to zero? It should match the VMC result for that trial function.	
-\item You can add an acceptance/rejection step to this just like in VMC, although the reasoning is quite different. What happens when you do that?
+\item You should be able to get the VMC result for your trial wave function. Does it match? 
 \end{itemize}
 
 \section{Importance sampling with weights}
@@ -42,7 +42,7 @@ each step.
 You probably don't need to perform this for too many steps!
 
 \begin{itemize}
-\item Track the weights of the walkers as a function of step. What happens?
+\item Track the weights of the walkers and their values as a function of step. What happens?
 \end{itemize}
 
 \section{Fixing the normalization}
@@ -85,6 +85,7 @@ Let's check some things:
 \section{More things to do}
 \begin{itemize}
 \item As you change the number of walkers, how does the behavior of $E_{\text ref}$ change?
+\item Implement a triplet wave function and fixed node. What is the node of this wave function?
 \end{itemize}
 
 
