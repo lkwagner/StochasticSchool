@@ -69,7 +69,7 @@ def simple_dmc(wf,ham,tau,pos,nstep=1000):
     ke,pot,elocold=ke_pot_tot_energies(pos,wf,ham)
     
     posnew=pos+np.sqrt(tau)*np.random.randn(*pos.shape)+driftold
-    driftnew=tau*wf.gradient(pos)
+    driftnew=tau*wf.gradient(posnew)
     acc=acceptance(pos,posnew,driftold,driftnew,tau,wf)
     imove=acc>np.random.random(nconfig)
     pos[:,:,imove]=posnew[:,:,imove]
@@ -94,7 +94,7 @@ def simple_dmc(wf,ham,tau,pos,nstep=1000):
 
     print("average energy",np.mean(eloc*weight/wavg),"eref",eref,"acceptance",acc_ratio)
     df['step'].append(istep)
-    df['elocal'].append(np.mean(eloc*weight/wavg))
+    df['elocal'].append(np.mean(eloc))
     df['weight'].append(np.mean(weight))
     df['elocalvar'].append(np.std(eloc))
     df['weightvar'].append(np.std(weight))
