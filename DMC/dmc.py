@@ -92,9 +92,9 @@ def simple_dmc(wf,ham,tau,pos,nstep=1000):
     #Update the reference energy
     eref=eref-np.log(wavg)
 
-    print("average energy",np.mean(eloc),"eref",eref,acc_ratio)
+    print("average energy",np.mean(eloc*weight/wavg),"eref",eref,"acceptance",acc_ratio)
     df['step'].append(istep)
-    df['elocal'].append(np.mean(eloc))
+    df['elocal'].append(np.mean(eloc*weight/wavg))
     df['weight'].append(np.mean(weight))
     df['elocalvar'].append(np.std(eloc))
     df['weightvar'].append(np.std(weight))
@@ -114,7 +114,7 @@ if __name__ == '__main__':
   from hamiltonian import Hamiltonian
   nconfig=50000
   dfs=[]
-  for tau in [.001,.005,.01,.02]:
+  for tau in [.01,.005,.0025]:
     dfs.append(simple_dmc(MultiplyWF(ExponentSlaterWF(2.0),JastrowWF(0.5)),
              Hamiltonian(),
              pos=np.random.randn(2,3,nconfig),
