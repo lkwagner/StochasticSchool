@@ -58,7 +58,7 @@ def primitive_action(paths,omega,lam,tau):
   return action
 
 def exact_action(paths,omega,lam,beta):
-  """ exponent of linear harmonic oscillator density matrix diagonal:
+  """ minus logorithm of linear harmonic oscillator density matrix diagonal:
     potential V(x) = 0.5*m*omega**2.*x**2 =omega**2*x**2/(4*lam) """
   nslice,nptcl,ndim,nconf = paths.shape
   assert ndim==1
@@ -68,6 +68,10 @@ def exact_action(paths,omega,lam,beta):
   r2    = ((paths)**2.).sum(axis=0).sum(axis=0).sum(axis=0)
   exp   = -2.*r2*(np.cosh(beta*omega)-1)
   return -(ratio*exp + const)
+
+def primitive_action_for_slice(paths,omega,lam,tau,islice):
+  """ action relatex to slice islice """
+  return 0.0
 
 if __name__ == '__main__':
   pass
