@@ -15,6 +15,7 @@ tau&step&local energy average&weight&local energy variance &weight variance&refe
 \hline
 \end{tabular}
 
+
 We will do our initial testing for $\tau\simeq 1$ and using $\alpha=2,\beta=0.5$ in the Slater-Jastrow wave function.
 	
 \section{Importance sampling} 
@@ -28,6 +29,14 @@ You can add an acceptance/rejection step to this just like in VMC, although the 
 Set all weights to one.
 Make a CSV file and use Pandas to analyze your data. 
 
+Remember:
+\begin{equation}
+	a(x' \leftarrow x) = \text{min}\left(1,\frac{\Psi_T^2(x') T(x \leftarrow x')}{\Psi_T^2(x) T(x' \leftarrow x)} \right)
+\end{equation}
+
+\begin{equation}
+	T(x'\leftarrow x) = \frac{ \left(x' - x - \tau \frac{\nabla \Psi_T(x)}{\Psi_T(x)}\right)^2}{ 2\tau}
+\end{equation}
 
 \begin{itemize}
 \item You should be able to get the VMC result for your trial wave function. Does it match? 
