@@ -77,10 +77,10 @@ def test_free_kinetic(nslices=[2,4,8,16],nconf=16):
 
 if __name__ == '__main__':
   
-  #n_free_slices(3)
-  #ready_for_next_step = False
-  #if not ready_for_next_step:
-  #  assert 1==0
+  n_free_slices(5)
+  ready_for_next_step = False
+  if not ready_for_next_step:
+    assert 1==0
 
   nconf = 256
   import os
@@ -104,7 +104,7 @@ if __name__ == '__main__':
   ax.plot([ref[0],ref[-1]],[myy[0],myy[-1]],c='k',lw=2,ls='--')
 
   ax.set_xlabel('PIMC kinetic energy (a.u.)',fontsize=16)
-  ax.set_ylabel('ideal gas kinetic energy (a.u.)',fontsize=16)
+  ax.set_ylabel('Virial kinetic energy (a.u.)',fontsize=16)
   ax.set_xlim(-0.2,1.2)
   ax.set_ylim(-0.2,1.2)
   plt.show()

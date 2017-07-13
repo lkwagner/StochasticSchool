@@ -19,7 +19,7 @@ class Path:
     self.tau    = tau
     self.lam    = lam
     self.beads  = beads.copy()
-    self.beta   = 1./(self.tau*self.nslice)
+    self.beta   = self.tau*self.nslice
     
     self.NumTimeSlices = self.nslice
     self.NumParticles  = self.nptcl
@@ -98,21 +98,15 @@ class Path:
     # computes kinetic energy
     KE=0.0
     # ---- solution ----
-    ## thermodynamic estimator
-    #KE = self.ndim*self.nptcl/(2.*self.tau)
-    #for islice in range(self.nslice):
-    #  sq_diff = (self.beads[islice] - self.beads[(islice-1)%self.nslice])**2.
-    #  numerator   = sq_diff.sum() # sum over particles and dimensions
-    #  denominator = 4.*self.lam*self.tau*self.tau**2.
-    #  KE -= numerator/denominator
-    KE = -0.5*self.ndim*np.log(4.*np.pi*self.lam*self.tau)
+    # thermodynamic estimator
+    KE = self.ndim*self.nptcl/(2.*self.tau)
     for islice in range(self.nslice):
       sq_diff = (self.beads[islice] - self.beads[(islice-1)%self.nslice])**2.
       numerator   = sq_diff.sum() # sum over particles and dimensions
-      denominator = 4.*self.lam*self.tau
-      KE += numerator/denominator
+      denominator = 4.*self.lam*self.tau*self.tau**2.
+      KE -= numerator/denominator/self.nslice
     # ---- solution ----
-    return float(KE)/self.nslice
+    return float(KE)
   def PotentialEnergy(self):
     # computes potential energy
     PE=0.0
