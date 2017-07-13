@@ -18,7 +18,6 @@ def SingleSliceMove(path,sigma=0.1):
 
   islice = 1 # always move time slice 1
 
-
   # calculate current value of actions related to time slice 1
   cur_action_to_change = action_for_slice(path,islice)
 
@@ -60,8 +59,9 @@ def pimc(nstep,path,move_list,block_size=10):
 
 def test_single_slice_move():
   from path import Path
-  #from action import HarmonicOscillator
-  #test_pot = lambda x:HarmonicOscillator(x,omega=10.)
+  from action import HarmonicOscillator
+  omega = 25.
+  test_pot = lambda x:0.0#lambda x:HarmonicOscillator(x,omega=omega)
   tau = 0.1
   lam = 0.5
 
@@ -69,30 +69,31 @@ def test_single_slice_move():
   nptcl  = 2
   ndim   = 3
   path = Path(np.zeros([nslice,nptcl,ndim]),tau,lam)
-  #path.SetPotential(test_pot)
+  path.SetPotential(test_pot)
   path.SetPotential(lambda x:0.0)
   path.SetCouplingConstant(0.0)
 
   nstep = 4000
-  move_list = [SingleSliceMove]
+  sig   = 0.2
+  move_list = [lambda x:SingleSliceMove(x,sig)]
   naccept,etrace,path_trace = pimc(nstep,path,move_list)
   nmove = len(move_list)*nstep
   acceptance_rate = float(naccept.sum())/nmove
   print('acceptance rate: {acc:4.2f}%'.format(acc=acceptance_rate*100.) )
 
-  #np.savetxt('energy.dat',etrace)
-  #np.savetxt('beads_trace.dat',path_trace.flatten())
+  np.savetxt('energy.dat',etrace)
+  x2 = (path_trace**2.).sum(axis=3).mean(axis=1).mean(axis=1) # averge over particles and slices
+  np.savetxt('x2.dat',x2)
+  print path.beta, omega, x2.mean()
 
-  nequil = 50 # in blocks
+  nequil = 500 # in blocks
   from CalcStatistics import Stats
   energy_mean,energy_error,energy_correlation =  Stats(etrace[nequil:])
 
-  beta = tau*nslice
-  energy_expect = 1.5*beta
+  # use 3 sigma tolerance
+  energy_expect = 1.5*path.beta*path.nptcl
   print(energy_mean,energy_error)
   print(energy_expect)
-
-  # use 3 sigma tolerance
   assert abs(energy_mean-energy_expect) < 3*energy_error
 
 if __name__ == '__main__':
