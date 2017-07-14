@@ -4,7 +4,6 @@ import pandas as pd
 from action import primitive_action, exact_action
 
 # ==== you will need to fill in metropolis_sample ====
-
 def metropolis_sample(paths,tot_action,nstep=150,sigma=0.5):
 
   nslice,nptcl,ndim,nconf = paths.shape

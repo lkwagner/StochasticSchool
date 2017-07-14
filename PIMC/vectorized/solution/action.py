@@ -163,5 +163,5 @@ def test_action_change():
 
 if __name__ == '__main__':
   test_actions()
-  test_action_change()
+  #test_action_change()
 

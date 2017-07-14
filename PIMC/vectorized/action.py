@@ -1,5 +1,6 @@
 import numpy as np
 
+# ==== you will need to fill in KineticAction and HarmonicPotentialAction ====
 class KineticAction:
   def __init__(self,tau,lam):
     """ tau: time step i.e. imaginary time between adjacent beads
@@ -42,6 +43,7 @@ class HarmonicPotentialAction:
     """
     plink = np.zeros(paths.shape[-1])
     return plink
+# ==== you will need to fill in KineticAction and HarmonicPotentialAction ====
 
 def primitive_action(paths,omega,lam,tau):
   """ calculate the primitive action of paths in a harmonic trap
@@ -145,4 +147,4 @@ def test_action_change():
 
 if __name__ == '__main__':
   test_actions()
-  test_action_change()
+  #test_action_change()
