@@ -103,7 +103,7 @@ class Path:
     for islice in range(self.nslice):
       sq_diff = (self.beads[islice] - self.beads[(islice-1)%self.nslice])**2.
       numerator   = sq_diff.sum() # sum over particles and dimensions
-      denominator = 4.*self.lam*self.tau*self.tau**2.
+      denominator = 4.*self.lam*self.tau*self.tau  #**2.
       KE -= numerator/denominator/self.nslice
     # ---- solution ----
     return float(KE)
