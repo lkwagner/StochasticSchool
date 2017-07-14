@@ -4,7 +4,6 @@ from action import primitive_action
 from metropolis import metropolis_sample
 from observe import draw_beads_3d,thermodynamic_kinetic
 
-# ==== you will need to fill in metropolis_sample ====
 def generate_free_gas_paths(
    tau    = 0.3
   ,nslice = 4
@@ -20,15 +19,15 @@ def generate_free_gas_paths(
   beta = nslice*tau # inverse temperature
 
   # initialize paths randomly
+  paths  = np.random.randn(nslice,nptcl,ndim,nconf)
 
   # initialize free action
+  tot_action = lambda x:primitive_action(x,omega,lam,tau)
 
   # use free action to sample paths
-
-  new_paths = np.random.randn(nslice,nptcl,ndim,nconf)
+  acc,new_paths = metropolis_sample(paths,tot_action,nstep=300)
 
   return beta,new_paths
-# ==== you will need to fill in generate_free_gas_paths ====
 
 def n_free_slices(nslice,nconf=16,lam=0.5,visualize=True):
   # sample free density matrix
@@ -79,9 +78,9 @@ def test_free_kinetic(nslices=[2,4,8,16],nconf=16):
 if __name__ == '__main__':
   
   n_free_slices(5)
-  ready_for_next_step = False
+  ready_for_next_step = True
   if not ready_for_next_step:
-    assert 1==0, 'get ready for next step'
+    assert 1==0
 
   nconf = 256
   import os

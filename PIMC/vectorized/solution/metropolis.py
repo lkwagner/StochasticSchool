@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 from action import primitive_action, exact_action
 
-# ==== you will need to fill in metropolis_sample ====
-
 def metropolis_sample(paths,tot_action,nstep=150,sigma=0.5):
 
   nslice,nptcl,ndim,nconf = paths.shape
@@ -14,13 +12,15 @@ def metropolis_sample(paths,tot_action,nstep=150,sigma=0.5):
     for islice in range(nslice):
 
       # calculate action
-      old_action = 0.0
+      old_action = tot_action(paths)
 
       # make a single slice move
+      move = sigma*np.random.randn(nptcl,ndim,nconf)
       new_paths = paths.copy()
+      new_paths[islice] += move
 
       # recalculate action 
-      new_action = 0.0
+      new_action = tot_action(new_paths)
 
       # accept or reject configurations
       action_change = new_action - old_action
@@ -28,10 +28,9 @@ def metropolis_sample(paths,tot_action,nstep=150,sigma=0.5):
       acc_idx = prob>np.random.rand(nconf)
       paths[:,:,:,acc_idx] = new_paths[:,:,:,acc_idx]
 
-      # record acceptance rate
+      # record observables
       acceptance += np.mean(acc_idx)/nstep/nslice
   return acceptance,paths
-# ==== you will need to fill in metropolis_sample ====
 
 def test_1d_sho(my_action,omegas=[5.,10.,15.,20.,25.],nconf=256,tau=0.05,nslice=20):
 

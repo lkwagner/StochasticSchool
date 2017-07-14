@@ -15,8 +15,20 @@ class KineticAction:
     Output:
       klink: float, kinetic link action
     """
-    klink = 0.0
-    return klink
+    r2_arr = (paths[islice] - paths[jslice])**2. # (nptcl,ndim,nconf)
+    r2 = r2_arr.sum(axis=0).sum(axis=0) # sum over ptcl, then dim
+    return r2/(4.*self.lam*self.tau)
+  def kinetic_action(self,paths,islice):
+    nslice,nptcl,ndim,nconf = paths.shape
+    tot = 0.0 
+
+    iprev = (islice-1)%nslice
+    tot  += self.kinetic_link_action(paths,iprev,islice)
+
+    inext = (islice+1)%nslice
+    tot  += self.kinetic_link_action(paths,islice,inext)
+
+    return tot
 
 class HarmonicPotentialAction:
   def __init__(self,tau,lam,omega):
@@ -30,7 +42,10 @@ class HarmonicPotentialAction:
     Output:
       pot 
     """
-    return 0.0
+    r2_arr = paths**2.
+    r2 = r2_arr.sum(axis=1).sum(axis=1) # sum over ptcl and dim
+    r2_mean = r2.mean(axis=0) # average over time slices
+    return self.omega**2.*r2_mean/(4.*self.lam)
   def potential_link_action(self,paths,islice,jslice):
     """ potential link action between imaginary time slice islice and jslice 
     Inputs:
@@ -40,8 +55,11 @@ class HarmonicPotentialAction:
     Output:
       plink: float, potential link action
     """
-    plink = 0.0
-    return plink
+    nslice,nptcl,ndim,nconf = paths.shape
+    r2_arr = paths**2.
+    r2 = r2_arr.sum(axis=1).sum(axis=1) # sum over ptcl and dim
+    avg_r2 = 0.5*(r2[islice]+r2[jslice])
+    return self.tau*self.omega**2.*avg_r2/(4.*self.lam)
 
 def primitive_action(paths,omega,lam,tau):
   """ calculate the primitive action of paths in a harmonic trap
@@ -77,7 +95,7 @@ def exact_action(paths,omega,lam,beta):
   return -(ratio*exp + const)
 
 def primitive_action_for_slice(paths,omega,lam,tau,islice):
-  """ action related to slice islice """
+  """ action relatex to slice islice """
   return 0.0
 
 if __name__ == '__main__':
