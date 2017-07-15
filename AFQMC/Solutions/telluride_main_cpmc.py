@@ -40,13 +40,13 @@ def main():
     for steps in range(total_steps): 
 
        # First Propagate by Half of One Body Term
-       ob.propagate_one_body(one_body_propagator,trial_wf_up,trial_wf_down,size,n_up,n_down)
+       ob.propagate_one_body(one_body_propagator,wf_up,wf_down,size,n_up,n_down)
 
        # Then Propagate By Two Body Term
        tb.propagate_two_body(wf_up,wf_down,size,n_up,n_down,U,delta_tau)
 
        # Lastly Propagate by Half of One Body Term
-       ob.propagate_one_body(one_body_propagator,trial_wf_up,trial_wf_down,size,n_up,n_down)
+       ob.propagate_one_body(one_body_propagator,wf_up,wf_down,size,n_up,n_down)
 
        # Orthogonalize the Wave Functions to Ensure No Collapse
        if(steps%steps_orthog == 0):
