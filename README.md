@@ -10,6 +10,9 @@ This is a collection of materials that are used in a school on stochastic method
  * Luke Shulenberger
  * Lucas Wagner
 
+The next school will be held the week of July 29 in Pittsburg. Logistical information is available here:
+https://molssi.org/event/school-on-stochastic-approaches-to-electronic-structure-calculations/
+
 # Packages used
 
  * python (3.6 or above recommended)
