@@ -8,6 +8,7 @@ This is a collection of materials that are used in a school on stochastic method
  * Brenda Rubenstein
  * James Shepherd
  * Luke Shulenberger
+ * Cyrus Umrigar
  * Lucas Wagner
 
 The next school will be held the week of July 29 in Pittsburg. Logistical information is available here:
