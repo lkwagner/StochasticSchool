@@ -26,6 +26,11 @@ https://molssi.org/event/school-on-stochastic-approaches-to-electronic-structure
 
  * Szabo and Ostlund
 
+## Software resources
+
+ * [Anaconda](https://www.anaconda.com/distribution/) - an easy way to install Python 
+ * Software Carpentry lessons: [Git](http://swcarpentry.github.io/git-novice/)/[Basic Python](http://swcarpentry.github.io/python-novice-inflammation/)/[Plotting in Python](http://swcarpentry.github.io/python-novice-gapminder/)
+
 ## Specific methods: 
 
  * AFQMC: [Motta review](https://onlinelibrary.wiley.com/doi/abs/10.1002/wcms.1364)/[Constrained path AFQMC](https://journals.aps.org/prb/abstract/10.1103/PhysRevB.55.7464)
