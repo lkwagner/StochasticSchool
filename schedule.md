@@ -31,8 +31,8 @@
 | 1:30-2:30   | Hands on: diffusion Monte Carlo (Wagner)         |
 | 2:30-3:00   | Coffee Break                                             |
 | 3:00-4:00   | Hands on: diffusion Monte Carlo (Wagner)         |
-| 4:00-5:00   | Lecture: Applications of VMC/DMC (Shulenburger)               |
-| 5:00-5:30   | Discussion and questions                                 |
+| 4:00-4:30   | Discussion and questions                                 |
+| 4:30-5:30   | Lecture: Applications of VMC/DMC (Shulenburger)               |
 
 
 ## Wednesday, July 31
