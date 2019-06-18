@@ -27,10 +27,11 @@
 | 9:00-10:00  | Lecture: Diffusion Monte Carlo (Wagner) |
 | 10:00-10:30 | Coffee Break                                             |
 | 10:30-12:30 | Hands on: diffusion Monte Carlo (Wagner)                     |
-| 12:30-1:30  | Lunch                                                    |
-| 1:30-2:30   | Lecture: Applications of VMC/DMC (Umrigar, Shulenburger, Wagner)               |
+| 12:30-1:30  | Lunch   |
+| 1:30-2:30   | Hands on: diffusion Monte Carlo (Wagner)         |
 | 2:30-3:00   | Coffee Break                                             |
-| 3:00-5:00   | Hands on: diffusion Monte Carlo (Wagner)         |
+| 3:00-4:00   | Hands on: diffusion Monte Carlo (Wagner)         |
+| 4:00-5:00   | Lecture: Applications of VMC/DMC (Shulenburger)               |
 | 5:00-5:30   | Discussion and questions                                 |
 
 
