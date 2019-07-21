@@ -11,11 +11,11 @@
 
 | Time        |                                                    |
 |-------------|----------------------------------------------------------|
-| 9:00-10:00  | Lecture: Introduction to stochastic algorithms (Umrigar) |
+| 9:00-10:00  | Lecture: Introduction to variational and projector Monte Carlo (Umrigar) |
 | 10:00-10:30 | Coffee Break                                             |
 | 10:30-12:30 | Hands on: Monte Carlo (Shulenburger)                     |
 | 12:30-1:30  | Lunch                                                    |
-| 1:30-2:30   | Lecture: Variational Monte Carlo (Umrigar)               |
+| 1:30-2:30   | Lecture: Wavefunction optimization (Umrigar)               |
 | 2:30-3:00   | Coffee Break                                             |
 | 3:00-5:00   | Hands on: Variational Monte Carlo (Shulenburger)         |
 | 5:00-5:30   | Discussion and questions                                 |
