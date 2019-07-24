@@ -4,8 +4,9 @@
 | Time        |                                                    |
 |-------------|----------------------------------------------------------|
 | 2:00-8:00  | Check in at housing (Boquet Gardens) |
-| 6:00-8:00 | Reception: Chevron Science Center (Lobby)                                             |
+| 5:00-7:00 | Reception: [Chevron Science Center](https://goo.gl/maps/cR8mVSDhZ4gwx8yd7) (Lobby)   219 Parkman Avenue, Pittsburgh PA                                         |
 
+All sessions will be held in 228 [Eberly Hall](https://goo.gl/maps/2MKY6deYo2de5gzW7)
 
 ## Monday, July 29
 
