@@ -39,6 +39,12 @@ sns.lmplot(x='step',y='weight',data=df,scatter_kws={'s':1},hue='tau',legend=Fals
 plt.legend(loc=(1.05,0.5))
 plt.savefig("weight.pdf",bbox_inches='tight')
 
+
+sns.lmplot(x='step',y='eref',data=df,scatter_kws={'s':1},hue='tau',legend=False)
+plt.legend(loc=(1.05,0.5))
+plt.savefig("eref.pdf",bbox_inches='tight')
+
+
 plt.figure()
 plt.axhline(-2.903724)
 plt.errorbar(x='tau',y='energy',yerr='err',data=df_reblock,
