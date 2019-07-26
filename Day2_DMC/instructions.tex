@@ -3,22 +3,41 @@
 \usepackage{fullpage}
 \usepackage{amsmath}
 \begin{document}
-	{\bf Diffusion Monte Carlo } 
+\begin{center}
+	{\bf \large Diffusion Monte Carlo } 
+\end{center} 
+
+\section*{Setting up your directory} 
+
+You will need the following working files from the Day1 VMC exercise: metropolis.py, slaterwf.py, wavefunction.py, and hamiltonian.py. 
+You can copy the files into your working directory, or you can put 
+\begin{verbatim}
+	import sys
+	sys.path.append("/path/to/Day1_VMC/")
+\end{verbatim}
+at the beginning of your Python file.
+
 
 \section*{The trajectories.} 
 
 We're going to write a series of implementations of diffusion Monte Carlo.
-Each implementation will generate data in the following form: 
+Each implementation will generate data with the following columns: 
 
-\begin{tabular}{ccccccc}
-tau&step&local energy average&weight&local energy variance &weight variance&reference energy\\
-\hline
-\end{tabular}
+\begin{itemize}
+	\item tau
+	\item step
+	\item elocal (local energy averaged over all configurations)
+	\item weight (averaged over all configurations)
+	\item elocalvar (local energy variance)
+	\item weightvar (weight variance)
+	\item eref (reference energy)
+\end{itemize}
 
+We will do our testing for $\tau\simeq 0.01$ and using $\alpha=2,\beta=0.5$ in the Slater-Jastrow wave function.
+We do this because these values satisfy the cusp conditions and so there will not be any divergences in the local energy.
 
-We will do our initial testing for $\tau\simeq 0.01$ and using $\alpha=2,\beta=0.5$ in the Slater-Jastrow wave function.
 	
-\section{Importance sampling} 
+\section*{Importance sampling} 
 
 For 1000 walkers, generate dynamics as follows: 
 \begin{equation}
@@ -42,7 +61,7 @@ Remember:
 \item You should be able to get the VMC result for your trial wave function. Does it match? 
 \end{itemize}
 
-\section{Importance sampling with weights}
+\section*{Importance sampling with weights}
 Now we will update the weights $w_i$. Set 
 \begin{equation}
 w*=	\exp[-\tau E_L(x_{n+1})] 
@@ -53,8 +72,10 @@ You probably don't need to perform this for too many steps!
 \begin{itemize}
 \item Track the weights of the walkers and their values as a function of step. What happens?
 \end{itemize}
+To check this, use the \texttt{dmc\_plot.py} file.
 
-\section{Fixing the normalization}
+
+\section*{Fixing the normalization}
 
 We want the weights to average around 1.
 Use a shift 
@@ -63,15 +84,18 @@ w*=	\exp[-\tau (E_L(x_{n+1}-E_{\text{ref}})]
 \end{equation}
 We can adjust $E_{\text {ref}}$ to ensure the weights average to one:
 \begin{equation}
-E_{\text{ref}}=E_{\text{ref}}-\log(\langle w \rangle) 
+E_{\text{ref}}=E_{\text{ref}}-\tau \log(\langle w \rangle) 
 \end{equation}
 where $\langle w \rangle$ is the average weight. 
 
 \begin{itemize}
 \item Now plot the weights. They should average to 1 but what happens to the variance?
 \end{itemize}
+To check this, use the \texttt{dmc\_plot.py} file.
 
-\section{Branching} 
+
+
+\section*{Branching} 
 
 We now want to split the walkers with too-large weights and kill the walkers with too-small weights. 
 There are many ways to do this; we will choose one that lets us keep the number of walkers constant. 
@@ -83,15 +107,19 @@ Every step:
 \item Assign new walkers (slicing)
 \item Set all weights to the average weight.
 \end{enumerate}
-\section{Using the algorithm}
+\section*{Using the algorithm}
 Congratulations! We have now implemented the DMC algorithm. 
 Let's check some things:
 
+
 \begin{itemize}
+\item How does the variance of the weights behave now? Is it more stable?
 \item The exact energy is -2.903724. Do we get that in the $\tau\rightarrow0$ limit?
 \end{itemize}
 
-\section{More things to do}
+To check this, use the \texttt{dmc\_reblock.py} file.
+
+\section*{More things to do}
 \begin{itemize}
 \item As you change the number of walkers, how does the behavior of $E_{\text ref}$ change?
 \item Implement a triplet wave function and fixed node. What is the node of this wave function?

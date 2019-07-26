@@ -1,5 +1,4 @@
 ## Subjects
 
-* Lithium atom
-* Nodal error by varying nodes
-* Timestep, mixed estimator errors
+* Exact solution of the Helium atom using diffusion Monte Carlo.
+* Implementation of importance sampling, branching, and timestep error correction.
