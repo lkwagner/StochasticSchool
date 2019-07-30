@@ -98,7 +98,7 @@ def simple_dmc(wf, ham, tau, pos, nstep=1000):
         pos = posnew.copy()
 
         # Update the reference energy
-        eref = eref - tau*np.log(wavg)
+        eref = eref - np.log(wavg)
 
         print(
             "iteration",
