@@ -22,7 +22,7 @@ sim_stats.nw = sim_params.nwalk_init
 
 for sim_stats.iter_curr in range(sim_params.max_iter):
 
-    spawned_walkers = {}    # A dictionary to hold the spawned walkers of each iteration
+    spawned_walkers = {}    # A dictionary to hold the spawned walkers of each iteration. With the initiator, this now takes a value which is a tuple of the weight, and the flag to indicate whether it came from an initiator determinant or not.
     sim_stats.nw = 0.0      # Recompute number of walkers each iteration
     sim_stats.ref_weight = 0.0
     sim_stats.nocc_dets = 0
@@ -73,35 +73,38 @@ for sim_stats.iter_curr in range(sim_params.max_iter):
             spawn_str = repr(spawn_det)
 
             if abs(p_spawn) > 1.e-12:
-                if spawn_str in spawned_walkers:
-                    spawned_walkers[spawn_str] += p_spawn
+                if sim_params.init_thresh is None
+                    # Initiator approximation not is use. Set all spawns to be from initiators
+                    init_flag = True
+                elif abs(det_amp) > sim_params.init_thresh:
+                    # Parent amplitude above initiator theshold. Set init_flag to true.
+                    init_flag = True
                 else:
-                    spawned_walkers[spawn_str] = p_spawn
+                    # Parent is not sufficiently weighted to be an initiator. Mark it so it is only kept if spawning to an occupied determinant
+                    init_flag = False
+                if spawn_str in spawned_walkers:
+                    # If multiple spawning events to the same determinant, always mark the resulting spawned determinant as from an initiator
+                    spawned_walkers[spawn_str][0] += p_spawn
+                    spawned_walkers[spawn_str][1] = True
+                else:
+                    spawned_walkers[spawn_str] = (p_spawn, init_flag)
 
         # DEATH STEP
         # Remember to now remove the reference energy from the determinant (this was done implicitly in part I)
         h_el_diag = sys_ham.slater_condon(det, det, None, None) - sim_stats.ref_energy
         walkers[det_str] -= sim_params.timestep * (h_el_diag - sim_params.shift) * det_amp
         
-
     # ANNIHILATION. Run through the list of newly spawned walkers, and merge with the main list.
     # However, if we are using the initiator approximation, we should also test whether we want 
     # to transfer the walker weight across, or whether we want to abort the spawning attempt.
-    for spawn_str, spawn_amp in spawned_walkers.items():
+    for spawn_str, (spawn_amp, init_flag) in spawned_walkers.items():
         if spawn_str in walkers:
             # Merge with walkers already currently residing on this determinant
             walkers[spawn_str] += spawn_amp
         else:
-            # Add as a new entry in the walker list
-            if sim_params.init_thresh is None:
-                # No initiator approximation
+            # Add as a new entry in the walker list (if it was marked as coming from an initiator determinant.
+            if init_flag:
                 walkers[spawn_str] = spawn_amp
-            else:
-                # Initiator approximation in place
-                # Spawning onto unoccupied determinant only allowed if parent
-                # determinant has a weight above threshold
-                if abs(det_amp) > sim_params.init_thresh:
-                    walkers[spawn_str] = spawn_amp
             
 # Every sim_params.stats_cycle iterations, readjust shift (if in variable shift mode) and print out statistics.
     if sim_stats.iter_curr % sim_params.stats_cycle == 0:

@@ -283,38 +283,48 @@ def elec_exchange_ops(det, ind):
     
     Return: The number of pairwise permutations required.'''
 
-    n = len(det)    # The number of electrons
-    perm = 0
+    # A better way to do it!
+    if True:
 
-    # Do we want to do pairwise permutations going up (i.e. element is too 
-    # small for its position), or down (i.e. element is too large for 
-    # its position) the list.
-    search_up = True
-    if ind == 0:
-        # The replaced element is at the beginning of the list
-        search_up = True
-    elif ind == n-1:
-        # The replaced element is at the end of the list
-        search_up = False
-    elif det[ind-1] > det[ind]:
-        # The replaced element is smaller than the preceeding element.
-        # We therefore have to search down (otherwise, up)
-        search_up = False
-
-    if search_up:
-        for x in range(ind+1,n):
-            if det[ind] < det[x]:
-                # We have gone through enough pair-wise permutations
-                # and have now found its rightful spot!
-                break
-            perm += 1
+        a_orb = det[ind]
+        det_sort = sorted(det)
+        newind = det_sort.index(a_orb)
+        perm = abs(newind - ind)
     else:
-        for x in range(ind-1,-1,-1):
-            if det[ind] > det[x]:
-                # We have gone through enough pair-wise permutations
-                # and have now found its rightful spot!
-                break
-            perm += 1
+        # A brute force way to do it!
+
+        n = len(det)    # The number of electrons
+        perm = 0
+
+        # Do we want to do pairwise permutations going up (i.e. element is too 
+        # small for its position), or down (i.e. element is too large for 
+        # its position) the list.
+        search_up = True
+        if ind == 0:
+            # The replaced element is at the beginning of the list
+            search_up = True
+        elif ind == n-1:
+            # The replaced element is at the end of the list
+            search_up = False
+        elif det[ind-1] > det[ind]:
+            # The replaced element is smaller than the preceeding element.
+            # We therefore have to search down (otherwise, up)
+            search_up = False
+
+        if search_up:
+            for x in range(ind+1,n):
+                if det[ind] < det[x]:
+                    # We have gone through enough pair-wise permutations
+                    # and have now found its rightful spot!
+                    break
+                perm += 1
+        else:
+            for x in range(ind-1,-1,-1):
+                if det[ind] > det[x]:
+                    # We have gone through enough pair-wise permutations
+                    # and have now found its rightful spot!
+                    break
+                perm += 1
     return perm
 
 def calc_excit_mat_parity(det, excited_det):
