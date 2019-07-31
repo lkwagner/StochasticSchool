@@ -2,7 +2,7 @@
 import numpy as np
 import sys
 
-sys.path.append("../../Day1_VMC/solutions")
+sys.path.append("../../Day1/VMC/solutions")
 
 from metropolis import metropolis_sample
 import pandas as pd
@@ -82,6 +82,7 @@ def simple_dmc(wf, ham, tau, pos, nstep=1000):
         imove = acc > np.random.random(nconfig)
         pos[:, :, imove] = posnew[:, :, imove]
         acc_ratio = np.sum(imove) / nconfig
+        acc_ratio=1
 
         # Change weight
         ke, pot, eloc = ke_pot_tot_energies(pos, wf, ham)
@@ -97,7 +98,7 @@ def simple_dmc(wf, ham, tau, pos, nstep=1000):
         pos = posnew.copy()
 
         # Update the reference energy
-        eref = eref - tau*np.log(wavg)
+        eref = eref - np.log(wavg)
 
         print(
             "iteration",
@@ -116,6 +117,7 @@ def simple_dmc(wf, ham, tau, pos, nstep=1000):
         df["weightvar"].append(np.std(weight))
         df["eref"].append(eref)
         df["tau"].append(tau)
+        #This is part of branching but we accumulate before this so you can see the weights.
         weight.fill(wavg)
 
     return pd.DataFrame(df)
